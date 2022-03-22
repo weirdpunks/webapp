@@ -62,7 +62,9 @@ const Web3 = () => {
       await connect()
     }
     if (!instance && cacheProvider) {
-      checkCache()
+      if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
+        checkCache()
+      }
     }
   }, [instance, connect])
 
