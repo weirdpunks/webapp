@@ -1,5 +1,18 @@
 import { Chain } from '../components/Context/Index'
 
+export interface ChainParameter {
+  chainId: string // A 0x-prefixed hexadecimal string
+  chainName: string
+  nativeCurrency: {
+    name: string
+    symbol: string // 2-6 characters long
+    decimals: 18
+  }
+  rpcUrls: string[]
+  blockExplorerUrls?: string[]
+  iconUrls?: string[] // Currently ignored.
+}
+
 export interface ChainData {
   id: Chain
   key: string
@@ -7,6 +20,7 @@ export interface ChainData {
   icon: 'eth' | 'polygon'
   explorer: string
   testnet?: boolean
+  parameter?: ChainParameter
 }
 
 export const chains: ChainData[] = [
@@ -22,7 +36,18 @@ export const chains: ChainData[] = [
     key: '0x89',
     value: 'Polygon',
     icon: 'polygon',
-    explorer: 'https://polygonscan.com'
+    explorer: 'https://polygonscan.com',
+    parameter: {
+      chainId: '0x89',
+      chainName: 'Polygon Mainnet',
+      nativeCurrency: {
+        name: 'Matic',
+        symbol: 'MATIC',
+        decimals: 18
+      },
+      rpcUrls: ['https://polygon-rpc.com/'],
+      blockExplorerUrls: ['https://polygonscan.com/']
+    }
   },
   {
     id: Chain.rinkeby,
