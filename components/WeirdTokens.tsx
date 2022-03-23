@@ -1,10 +1,11 @@
-import { Box } from '@chakra-ui/react'
-import { useApp, Chain } from './Context/Index'
+import { useApp } from './Context/Index'
 import { weird } from '../utils/contracts'
 import { chains } from '../utils/chains'
-import { ethers } from 'ethers'
-import { useEffect, useState } from 'react'
 import { erc20abi } from '../artifacts/erc20'
+import { ethers } from 'ethers'
+import { Box, Heading, Flex } from '@chakra-ui/react'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 const WeirdTokens = () => {
   const { state, dispatch } = useApp()
@@ -49,7 +50,31 @@ const WeirdTokens = () => {
     }
   }, [provider, address, chain])
 
-  return <Box>Weird Tokens: {balance}</Box>
+  return (
+    <Box textAlign='center' py={10} px={6}>
+      <Box display='inline-block'>
+        <Flex
+          flexDirection='column'
+          justifyContent='center'
+          alignItems='center'
+          rounded={'50px'}
+          w={'34px'}
+          h={'34px'}
+          textAlign='center'>
+          <Image
+            src='/icons/weirdTokenPolygon.png'
+            width={34}
+            height={34}
+            alt='$WEIRD'
+          />
+        </Flex>
+      </Box>
+
+      <Heading as='h2' size='xl' mt={6} mb={2}>
+        Weird Tokens: {balance}{' '}
+      </Heading>
+    </Box>
+  )
 }
 
 export default WeirdTokens
