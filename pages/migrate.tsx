@@ -1,4 +1,5 @@
 import { useApp } from '../components/Context/Index'
+import OpenSeaMigration from '../components/OpenSeaMigration'
 import type { NextPage } from 'next'
 import { Box, Heading, Text, Stack } from '@chakra-ui/react'
 
@@ -32,6 +33,7 @@ const Migration: NextPage = () => {
           )}`}</Text>
         </Stack>
       )}
+      <OpenSeaMigration />
     </Box>
   )
 }
