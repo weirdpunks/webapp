@@ -4,7 +4,7 @@ module.exports = {
   priority: 0.7,
   sitemapSize: 5000,
   generateRobotsTxt: true,
-  exclude: ['/bridge', '/migration', '/tokens'],
+  exclude: ['/bridge', '/migrate', '/tokens'],
   robotsTxtOptions: {
     policies: [
       {
