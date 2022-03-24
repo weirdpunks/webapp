@@ -10,7 +10,8 @@ import {
   reset
 } from './Context/Index'
 import { chains, ChainData } from '../utils/chains'
-import { weird } from '../utils/contracts'
+import { weird, openSea } from '../utils/contracts'
+import { mumbai, rinkeby, polygon, ethereum } from '../utils/mappings'
 import { ethers } from 'ethers'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import WalletLink from 'walletlink'
@@ -33,6 +34,7 @@ import {
 import { FaWallet } from 'react-icons/fa'
 import { useCallback, useEffect, useState } from 'react'
 import { erc20abi } from '../artifacts/erc20'
+import { erc1155abi } from '../artifacts/erc1155'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -122,13 +124,12 @@ const Web3 = () => {
 
   useEffect(() => {
     const getBalance = async ({
-      url,
-      contract
+      contract,
+      provider
     }: {
-      url: string
       contract: string
+      provider: ethers.providers.JsonRpcProvider
     }) => {
-      const provider = new ethers.providers.JsonRpcProvider(url)
       const erc20 = new ethers.Contract(contract, erc20abi, provider)
       const balance = await erc20.balanceOf(`${address}`)
       if (balance) {
@@ -138,29 +139,96 @@ const Web3 = () => {
       }
     }
 
+    interface Map {
+      id: number
+      osid: string
+    }
+
+    const getOpenSeaIds = async ({
+      mapping,
+      os,
+      provider
+    }: {
+      mapping: Map[]
+      os: string
+      provider: ethers.providers.JsonRpcProvider
+    }) => {
+      let addresses = []
+      let ids = []
+      for (let i = 0; i < mapping.length; i++) {
+        addresses.push(address)
+        ids.push(mapping[i].osid)
+      }
+      const erc1155 = new ethers.Contract(os, erc1155abi, provider)
+      const balance = await erc1155.balanceOfBatch(addresses, ids)
+      let found = []
+      for (let i = 0; i < balance.length; i++) {
+        if (balance[i].toString() === '1') {
+          found.push(mapping[i].id)
+        }
+      }
+      return found
+    }
+
     const loadAssets = async () => {
       const mainnet = testnet
         ? {
             url: `https://goerli.infura.io/v3/${infuraId}`,
-            contract: weird.goerli
+            contract: weird.goerli,
+            os: openSea.rinkeby,
+            mapping: rinkeby
           }
         : {
             url: `https://mainnet.infura.io/v3/${infuraId}`,
-            contract: weird.mainnet
+            contract: weird.mainnet,
+            os: openSea.mainnet,
+            mapping: ethereum
           }
       const layer2 = testnet
         ? {
             url: `https://polygon-mumbai.infura.io/v3/${infuraId}`,
-            contract: weird.mumbai
+            contract: weird.mumbai,
+            os: openSea.mumbai,
+            mapping: mumbai
           }
         : {
             url: `https://polygon-mainnet.infura.io/v3/${infuraId}`,
-            contract: weird.polygon
+            contract: weird.polygon,
+            os: openSea.polygon,
+            mapping: polygon
           }
-      const weirdMainnet = await getBalance(mainnet)
-      const weirdLayer2 = await getBalance(layer2)
-      dispatch(setBalance({ balance: weirdMainnet, isLayer2: false }))
-      dispatch(setBalance({ balance: weirdLayer2, isLayer2: true }))
+      const mainnetProvider = new ethers.providers.JsonRpcProvider(mainnet.url)
+      const layer2Provider = new ethers.providers.JsonRpcProvider(layer2.url)
+      const weirdMainnet = await getBalance({
+        contract: mainnet.contract,
+        provider: mainnetProvider
+      })
+      if (weirdMainnet > 0) {
+        dispatch(setBalance({ balance: weirdMainnet, isLayer2: false }))
+      }
+      const weirdLayer2 = await getBalance({
+        contract: layer2.contract,
+        provider: layer2Provider
+      })
+      if (weirdLayer2 > 0) {
+        dispatch(setBalance({ balance: weirdLayer2, isLayer2: true }))
+      }
+      const osMainnet = await getOpenSeaIds({
+        mapping: mainnet.mapping,
+        os: mainnet.os,
+        provider: mainnetProvider
+      })
+      if (osMainnet.length > 0) {
+        dispatch(setIds({ ids: osMainnet, isLayer2: false, isOpenSea: true }))
+      }
+      const osLayer2 = await getOpenSeaIds({
+        mapping: layer2.mapping,
+        os: layer2.os,
+        provider: layer2Provider
+      })
+      if (osMainnet.length > 0) {
+        dispatch(setIds({ ids: osLayer2, isLayer2: true, isOpenSea: true }))
+      }
     }
 
     if (address !== '') {

@@ -12,7 +12,7 @@ const displayTestnets = false
 
 const ChainComponent = () => {
   const { state, dispatch } = useApp()
-  const { chain, provider } = state
+  const { chain, signer } = state
 
   const [selectedChain, setSelectedChain] = useState<ChainData | undefined>()
 
@@ -30,7 +30,7 @@ const ChainComponent = () => {
 
   const handleSwitchNetwork = (id: string) => {
     const attemptSwitch = async () => {
-      if (provider) {
+      if (signer) {
         try {
           await window?.ethereum?.request({
             method: 'wallet_switchEthereumChain',
