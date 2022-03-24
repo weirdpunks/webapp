@@ -1,7 +1,7 @@
-import { useApp } from '../components/Context/Index'
-import OpenSeaMigration from '../components/OpenSeaMigration'
-import type { NextPage } from 'next'
+import { useApp } from '@/components/Context'
+import OpenSeaMigration from '@/components/OpenSeaMigration'
 import { Box, Heading, Text, Stack } from '@chakra-ui/react'
+import type { NextPage } from 'next'
 
 const Migration: NextPage = () => {
   const { state } = useApp()

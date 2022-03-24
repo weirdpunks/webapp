@@ -1,4 +1,4 @@
-import { Chain, AppState, initialAppState } from './state'
+import { Chain, AppState, initialAppState } from '@/app/state'
 import {
   ActionType,
   SetSigner,
@@ -6,8 +6,9 @@ import {
   SetAddress,
   SetIds,
   SetBalance,
+  SetStatus,
   AppActions
-} from './actions'
+} from '@/app/actions'
 import {
   appReducer,
   setSigner,
@@ -15,9 +16,10 @@ import {
   setAddress,
   setIds,
   setBalance,
+  setStatus,
   reset
-} from './reducers'
-import { AppContext } from './context'
+} from '@/app/reducers'
+import { AppContext } from '@/app/context'
 import { useContext, useMemo, useReducer, ReactNode } from 'react'
 
 export type {
@@ -27,6 +29,7 @@ export type {
   SetAddress,
   SetIds,
   SetBalance,
+  SetStatus,
   AppActions
 }
 
@@ -41,6 +44,7 @@ export {
   setAddress,
   setIds,
   setBalance,
+  setStatus,
   reset
 }
 

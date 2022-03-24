@@ -1,12 +1,9 @@
-import { ETHLogo, PolygonLogo } from './Logos'
-import { useApp, setChain } from './Context/Index'
-import { chains, ChainData } from '../utils/chains'
+import { ETHLogo, PolygonLogo } from '@/components/UI/Logos'
+import { useApp, setChain } from '@/components/Context'
+import { chains, ChainData } from '@/utils/chains'
 import { Button, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons'
-import { ethers } from 'ethers'
-// import WalletConnectProvider from '@walletconnect/web3-provider'
-// import Web3Modal from 'web3modal'
-import { ErrorInfo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const displayTestnets = false
 
@@ -38,7 +35,12 @@ const ChainComponent = () => {
           })
           const newChain = chains.find((i) => i.key === id)
           if (newChain) {
-            dispatch(setChain(newChain.id))
+            dispatch(
+              setChain({
+                chain: newChain.id,
+                isTestnet: Boolean(newChain.testnet)
+              })
+            )
           }
         } catch (e) {
           if (typeof e === 'object' && e !== null && 'code' in e) {
@@ -51,7 +53,12 @@ const ChainComponent = () => {
                     method: 'wallet_addEthereumChain',
                     params: newChain.parameter
                   })
-                  dispatch(setChain(newChain.id))
+                  dispatch(
+                    setChain({
+                      chain: newChain.id,
+                      isTestnet: Boolean(newChain.testnet)
+                    })
+                  )
                 }
               } catch (addError) {
                 console.log('Unable to add network')

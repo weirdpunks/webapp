@@ -1,4 +1,4 @@
-import { Chain } from '../components/Context/Index'
+import { Chain } from '@/components/Context'
 
 export interface ChainParameter {
   chainId: string // A 0x-prefixed hexadecimal string

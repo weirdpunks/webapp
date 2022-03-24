@@ -1,8 +1,8 @@
-import type { NextPage } from 'next'
+import Hero from '@/components/UI/Hero'
+import WeirdPunkCard from '@/components/UI/WeirdPunkCard'
+import Testimonial from '@/components/UI/Testimonial'
 import { Container, SimpleGrid } from '@chakra-ui/react'
-import Hero from '../components/Hero'
-import WeirdPunkCard from '../components/WeirdPunkCard'
-import Testimonial from '../components/Testimonial'
+import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (

@@ -1,10 +1,9 @@
-import NavLink from './NavLink'
-import Web3 from './Web3'
-import Chain from './Chain'
-
-import Image from 'next/image'
-
+import NavLink from '@/components/UI/NavLink'
+import Web3 from '@/components/UI/Web3'
+import { useApp } from '@/components/Context'
 import {
+  Alert,
+  AlertIcon,
   Box,
   Flex,
   HStack,
@@ -16,6 +15,7 @@ import {
   Stack
 } from '@chakra-ui/react'
 import { HamburgerIcon, CloseIcon, MoonIcon, SunIcon } from '@chakra-ui/icons'
+import Image from 'next/image'
 
 const Links = [
   { slug: '/', title: 'HOME' },
@@ -26,6 +26,8 @@ const Links = [
 const Bar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { colorMode, toggleColorMode } = useColorMode()
+  const { state } = useApp()
+  const { testnet } = state
 
   return (
     <>
@@ -59,13 +61,7 @@ const Bar = () => {
                 {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
               </Button>
             </Box>
-            <Box m='2'>
-              <Chain />
-            </Box>
-            <Box m='2'>
-              <Web3 />
-            </Box>
-            <Box m='2'></Box>
+            <Web3 />
           </Flex>
         </Flex>
 
@@ -81,6 +77,12 @@ const Bar = () => {
           </Box>
         ) : null}
       </Box>
+      {testnet && (
+        <Alert status='warning'>
+          <AlertIcon />
+          You are currently on testnet.
+        </Alert>
+      )}
     </>
   )
 }

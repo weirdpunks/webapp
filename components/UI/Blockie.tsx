@@ -12,7 +12,7 @@ const Blockie = ({ address, currentWallet, size }: BlockieProps) => {
     <Box>
       <Blockies
         seed={address ? address.toLowerCase() : ''}
-        scale={size ? size : 3}
+        scale={size ? size : 2}
         className='identicon'
       />
     </Box>

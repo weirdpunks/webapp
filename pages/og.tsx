@@ -1,10 +1,10 @@
+import OGCompare from '@/components/UI/OGCompare'
+import Hero from '@/components/UI/Hero'
+import Heading from '@/components/UI/Heading'
+import { Avatar, Box, Link } from '@chakra-ui/react'
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import { Avatar, Box, Link } from '@chakra-ui/react'
-import OGCompare from '../components/OGCompare'
-import Hero from '../components/Hero'
 import { useState, useMemo } from 'react'
-import Heading from '../components/Heading'
 
 const useHover = () => {
   const [hovered, setHovered] = useState<boolean>(false)

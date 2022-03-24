@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
-import { useState } from 'react'
-import { getEllipsisTxt } from '../utils/formatters'
-import Blockie from './Blockie'
-// import './identicon.css'
+import Blockie from '@/components/UI/Blockie'
+import { getEllipsisTxt } from '@/utils/formatters'
 import { Skeleton } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
 
 interface AddressProps {
   address?: string

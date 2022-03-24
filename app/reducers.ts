@@ -6,9 +6,10 @@ import {
   SetAddress,
   SetIds,
   SetBalance,
+  SetStatus,
   Reset
-} from './actions'
-import { initialAppState, AppState, Chain } from './state'
+} from '@/app/actions'
+import { initialAppState, AppState, Chain } from '@/app/state'
 import { ethers } from 'ethers'
 
 export const appReducer = (state: AppState, action: AppActions): AppState => {
@@ -16,7 +17,11 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
     case ActionType.SetSigner:
       return { ...state, signer: action.payload }
     case ActionType.SetChain:
-      return { ...state, chain: action.payload }
+      return {
+        ...state,
+        chain: action.payload.chain,
+        testnet: action.payload.isTestnet
+      }
     case ActionType.SetAddress:
       return { ...state, address: action.payload }
     case ActionType.SetIds:
@@ -49,6 +54,8 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
           ? action.payload.balance
           : state.weirdLayer2
       }
+    case ActionType.SetStatus:
+      return { ...state, loading: action.payload }
     case ActionType.Reset:
       return initialAppState
     default:
@@ -63,9 +70,15 @@ export const setSigner = (
   payload: signer
 })
 
-export const setChain = (chain: Chain): SetChain => ({
+export const setChain = ({
+  chain,
+  isTestnet
+}: {
+  chain: Chain
+  isTestnet: boolean
+}): SetChain => ({
   type: ActionType.SetChain,
-  payload: chain
+  payload: { chain, isTestnet }
 })
 
 export const setAddress = (address: string): SetAddress => ({
@@ -102,6 +115,11 @@ export const setBalance = ({
     balance,
     isLayer2
   }
+})
+
+export const setStatus = (loading: boolean): SetStatus => ({
+  type: ActionType.SetStatus,
+  payload: loading
 })
 
 export const reset = (): Reset => ({

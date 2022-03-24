@@ -1,6 +1,6 @@
-import type { NextPage } from 'next'
+import WPHeading from '@/components/UI/Heading'
 import { Box, Button, Heading, Link, Stack } from '@chakra-ui/react'
-import WPHeading from '../components/Heading'
+import type { NextPage } from 'next'
 
 const DAO: NextPage = () => {
   return (

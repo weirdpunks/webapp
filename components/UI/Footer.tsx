@@ -6,8 +6,8 @@ import {
   useColorModeValue
 } from '@chakra-ui/react'
 import { FaDiscord, FaMedium, FaTwitter, FaYoutube } from 'react-icons/fa'
-import SocialButton from './SocialButton'
-// import OpenSeaIcon from './OpenSeaIcon'
+import SocialButton from '@/components/UI/SocialButton'
+// import OpenSeaIcon from '@/components/UI/OpenSeaIcon'
 
 const Footer = () => {
   return (

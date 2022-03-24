@@ -1,5 +1,5 @@
-import type { NextPage } from 'next'
 import { Box, Heading } from '@chakra-ui/react'
+import type { NextPage } from 'next'
 
 const Bridge: NextPage = () => {
   return (

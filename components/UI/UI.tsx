@@ -1,10 +1,12 @@
-import Bar from './Bar'
-import Footer from './Footer'
+import Wallet from '@/components/Wallet'
+import Bar from '@/components/UI/Bar'
+import Footer from '@/components/UI/Footer'
+// import AccountModal from '@/components/UI/AccountModal'
 import { ReactNode } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 import Head from 'next/head'
 
-const Layout = ({ children }: { children: ReactNode }) => {
+const UI = ({ children }: { children: ReactNode }) => {
   return (
     <Box>
       <Head>
@@ -15,11 +17,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
         />
         <link rel='icon' href='/favicon.gif' type='image/gif' />
       </Head>
+      <Wallet />
       <Bar />
       <Container maxW='4xl'>{children}</Container>
       <Footer />
+      {/* <AccountModal /> */}
     </Box>
   )
 }
 
-export default Layout
+export default UI

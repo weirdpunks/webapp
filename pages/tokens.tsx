@@ -1,7 +1,7 @@
-import type { NextPage } from 'next'
+import WPHeading from '@/components/UI/Heading'
+import WeirdTokens from '@/components/WeirdTokens'
 import { Box } from '@chakra-ui/react'
-import WPHeading from '../components/Heading'
-import WeirdTokens from '../components/WeirdTokens'
+import type { NextPage } from 'next'
 
 const Tokens: NextPage = () => {
   return (

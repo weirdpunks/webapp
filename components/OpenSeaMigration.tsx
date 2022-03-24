@@ -1,10 +1,11 @@
-import { useApp } from '../components/Context/Index'
+import { useApp } from '@/components/Context'
 import { Box, Button, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { FaCheckCircle } from 'react-icons/fa'
 import { useEffect, useState } from 'react'
 
 const OpenSeaMigration = () => {
   const { state } = useApp()
+  const {} = state
 
   const [granted, setGranted] = useState(false)
 
@@ -29,7 +30,7 @@ const OpenSeaMigration = () => {
           <Text fontWeight={600}>Permission Granted</Text>
         </Stack>
       ) : (
-        <Button onClick={handlePermission}>Yes please 🙏</Button>
+        <Button onClick={handlePermission}>Authorize</Button>
       )}
       <Text>2. Burn 🔥 OpenSea Weird Punk & Mint Migrated Weird Punk</Text>
       <Button onClick={handleBurnAndMint} disabled={!granted}>

@@ -1,4 +1,5 @@
-import type { NextPage } from 'next'
+import Card from '@/components/UI/Card'
+import WPHeading from '@/components/UI/Heading'
 import {
   Container,
   SimpleGrid,
@@ -7,8 +8,7 @@ import {
   Button,
   Link
 } from '@chakra-ui/react'
-import Card from '../components/Card'
-import WPHeading from '../components/Heading'
+import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (

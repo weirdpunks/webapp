@@ -1,4 +1,4 @@
-import Address from './Address'
+import Address from '@/components/UI/Address'
 import {
   useApp,
   Chain,
@@ -8,30 +8,15 @@ import {
   setIds,
   setBalance,
   reset
-} from './Context/Index'
-import { chains, ChainData } from '../utils/chains'
-import { weird, openSea } from '../utils/contracts'
-import { mumbai, rinkeby, polygon, ethereum } from '../utils/mappings'
+} from '@/components/Context'
+import { chains, ChainData } from '@/utils/chains'
+import { weird, openSea } from '@/utils/contracts'
+import { mumbai, rinkeby, polygon, ethereum } from '@/utils/mappings'
 import { ethers } from 'ethers'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import WalletLink from 'walletlink'
 import Web3Modal from 'web3modal'
-import {
-  Box,
-  Button,
-  Link,
-  Icon,
-  useColorMode,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure
-} from '@chakra-ui/react'
-import { FaWallet } from 'react-icons/fa'
+import { useColorMode, useDisclosure } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
 import { erc20abi } from '../artifacts/erc20'
 import { erc1155abi } from '../artifacts/erc1155'
@@ -39,13 +24,10 @@ import { erc1155abi } from '../artifacts/erc1155'
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
-const Web3 = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+const Wallet = () => {
   const { colorMode } = useColorMode()
   const { state, dispatch } = useApp()
-  const { signer, chain, address, testnet } = state
-
-  const [currChain, setCurrChain] = useState<ChainData | null>(null)
+  const { address, testnet, loading } = state
   const [provider, setProvider] =
     useState<ethers.providers.Web3Provider | null>(null)
 
@@ -80,7 +62,7 @@ const Web3 = () => {
     dispatch(setSigner(newSigner))
     dispatch(setAddress(accounts[0]))
     if (found) {
-      dispatch(setChain(found.id))
+      dispatch(setChain({ chain: found.id, isTestnet: Boolean(found.testnet) }))
     }
     setProvider(walletProvider)
   }, [dispatch, colorMode])
@@ -89,12 +71,12 @@ const Web3 = () => {
     const checkCache = async () => {
       await connect()
     }
-    if (!address && cacheProvider) {
+    if (loading && cacheProvider) {
       if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
         checkCache()
       }
     }
-  }, [address, connect])
+  }, [loading, connect])
 
   useEffect(() => {
     const subscribe = async () => {
@@ -113,7 +95,9 @@ const Web3 = () => {
         const chainKey = `0x${chainId.toString(16)}`
         const found = chains.find((i) => i.key === chainKey)
         if (found) {
-          dispatch(setChain(found.id))
+          dispatch(
+            setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
+          )
         }
       })
     }
@@ -236,74 +220,7 @@ const Web3 = () => {
     }
   }, [testnet, address, dispatch])
 
-  useEffect(() => {
-    const setChainData = async () => {
-      const found = await chains.find((i) => i.id === chain)
-      if (found) {
-        setCurrChain(found)
-      }
-    }
-    if (chain) {
-      setChainData()
-    }
-  }, [chain])
-
-  const handleWalletClick = () => {
-    const openConnection = async () => {
-      await connect()
-    }
-    openConnection()
-  }
-
-  return (
-    <>
-      {address ? (
-        <>
-          <Button onClick={onOpen}>
-            <Address address={address} avatar='right' size={4} />
-          </Button>
-          <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader>Account</ModalHeader>
-              <ModalCloseButton />
-              <ModalBody>
-                <Address address={address} avatar='left' size={8} copyable />
-                <Box mt={10} px={10}>
-                  <Link
-                    href={`${currChain?.explorer}/address/${address}`}
-                    isExternal>
-                    View on Explorer
-                  </Link>
-                </Box>
-              </ModalBody>
-              <ModalFooter>
-                <Button
-                  colorScheme='red'
-                  mr={3}
-                  onClick={async () => {
-                    dispatch(reset())
-                    window.localStorage.removeItem(
-                      'WEB3_CONNECT_CACHED_PROVIDER'
-                    )
-                    onClose()
-                  }}>
-                  Disconnect
-                </Button>
-                <Button variant='ghost' onClick={onClose}>
-                  Close
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
-        </>
-      ) : (
-        <Button onClick={handleWalletClick}>
-          <Icon as={FaWallet} />
-        </Button>
-      )}
-    </>
-  )
+  return null
 }
 
-export default Web3
+export default Wallet

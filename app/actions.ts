@@ -1,5 +1,5 @@
+import { Chain } from '@/app/state'
 import { ethers } from 'ethers'
-import { Chain } from './state'
 
 export enum ActionType {
   SetInstance,
@@ -8,6 +8,7 @@ export enum ActionType {
   SetAddress,
   SetIds,
   SetBalance,
+  SetStatus,
   Reset
 }
 
@@ -18,7 +19,10 @@ export interface SetSigner {
 
 export interface SetChain {
   type: ActionType.SetChain
-  payload: Chain
+  payload: {
+    chain: Chain
+    isTestnet: boolean
+  }
 }
 
 export interface SetAddress {
@@ -43,6 +47,11 @@ export interface SetBalance {
   }
 }
 
+export interface SetStatus {
+  type: ActionType.SetStatus
+  payload: boolean
+}
+
 export interface Reset {
   type: ActionType.Reset
 }
@@ -53,4 +62,5 @@ export type AppActions =
   | SetAddress
   | SetIds
   | SetBalance
+  | SetStatus
   | Reset
