@@ -58,10 +58,6 @@ const OGWP: NextPage = () => {
       </Box>
       <OGCompare />
       <Box p={4} textAlign={'center'}>
-        All weird punks are equal, including OGs! You become part of the Weird
-        Punks DAO.
-      </Box>
-      <Box p={4} textAlign={'center'}>
         By the way, they look amazing on Discord Nitro.
         <br />
         (Animates on hover)

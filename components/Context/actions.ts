@@ -3,21 +3,12 @@ import { Chain } from './state'
 
 export enum ActionType {
   SetInstance,
-  SetProvider,
   SetSigner,
   SetChain,
   SetAddress,
+  SetIds,
+  SetBalance,
   Reset
-}
-
-export interface SetInstance {
-  type: ActionType.SetInstance
-  payload: ethers.providers.Web3Provider
-}
-
-export interface SetProvider {
-  type: ActionType.SetProvider
-  payload: ethers.providers.Web3Provider
 }
 
 export interface SetSigner {
@@ -35,14 +26,31 @@ export interface SetAddress {
   payload: string
 }
 
+export interface SetIds {
+  type: ActionType.SetIds
+  payload: {
+    ids: number[]
+    isLayer2: boolean
+    isOpenSea: boolean
+  }
+}
+
+export interface SetBalance {
+  type: ActionType.SetBalance
+  payload: {
+    balance: number
+    isLayer2: boolean
+  }
+}
+
 export interface Reset {
   type: ActionType.Reset
 }
 
 export type AppActions =
-  | SetInstance
-  | SetProvider
   | SetSigner
   | SetChain
   | SetAddress
+  | SetIds
+  | SetBalance
   | Reset

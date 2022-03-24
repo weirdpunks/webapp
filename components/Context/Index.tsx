@@ -1,20 +1,20 @@
 import { Chain, AppState, initialAppState } from './state'
 import {
   ActionType,
-  SetInstance,
-  SetProvider,
   SetSigner,
   SetChain,
   SetAddress,
+  SetIds,
+  SetBalance,
   AppActions
 } from './actions'
 import {
   appReducer,
-  setInstance,
-  setProvider,
   setSigner,
   setChain,
   setAddress,
+  setIds,
+  setBalance,
   reset
 } from './reducers'
 import { AppContext } from './context'
@@ -22,11 +22,11 @@ import { useContext, useMemo, useReducer, ReactNode } from 'react'
 
 export type {
   AppState,
-  SetInstance,
-  SetProvider,
   SetSigner,
   SetChain,
   SetAddress,
+  SetIds,
+  SetBalance,
   AppActions
 }
 
@@ -36,11 +36,11 @@ export {
   initialAppState,
   ActionType,
   appReducer,
-  setInstance,
-  setProvider,
   setSigner,
   setChain,
   setAddress,
+  setIds,
+  setBalance,
   reset
 }
 
