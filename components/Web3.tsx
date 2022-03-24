@@ -147,10 +147,12 @@ const Web3 = () => {
     const getOpenSeaIds = async ({
       mapping,
       os,
+      isLayer2,
       provider
     }: {
       mapping: Map[]
       os: string
+      isLayer2: boolean
       provider: ethers.providers.JsonRpcProvider
     }) => {
       let addresses = []
@@ -167,7 +169,9 @@ const Web3 = () => {
           found.push(mapping[i].id)
         }
       }
-      return found
+      if (found.length > 0) {
+        dispatch(setIds({ ids: found, isLayer2, isOpenSea: true }))
+      }
     }
 
     const loadAssets = async () => {
@@ -213,22 +217,18 @@ const Web3 = () => {
       if (weirdLayer2 > 0) {
         dispatch(setBalance({ balance: weirdLayer2, isLayer2: true }))
       }
-      const osMainnet = await getOpenSeaIds({
+      await getOpenSeaIds({
         mapping: mainnet.mapping,
         os: mainnet.os,
+        isLayer2: false,
         provider: mainnetProvider
       })
-      if (osMainnet.length > 0) {
-        dispatch(setIds({ ids: osMainnet, isLayer2: false, isOpenSea: true }))
-      }
-      const osLayer2 = await getOpenSeaIds({
+      await getOpenSeaIds({
         mapping: layer2.mapping,
         os: layer2.os,
+        isLayer2: true,
         provider: layer2Provider
       })
-      if (osMainnet.length > 0) {
-        dispatch(setIds({ ids: osLayer2, isLayer2: true, isOpenSea: true }))
-      }
     }
 
     if (address !== '') {
