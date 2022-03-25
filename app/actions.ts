@@ -2,6 +2,7 @@ import { Chain } from '@/app/state'
 import { ethers } from 'ethers'
 
 export enum ActionType {
+  SetProvider,
   SetInstance,
   SetSigner,
   SetChain,
@@ -10,6 +11,11 @@ export enum ActionType {
   SetBalance,
   SetStatus,
   Reset
+}
+
+export interface SetProvider {
+  type: ActionType.SetProvider
+  payload: ethers.providers.Web3Provider
 }
 
 export interface SetSigner {
@@ -57,6 +63,7 @@ export interface Reset {
 }
 
 export type AppActions =
+  | SetProvider
   | SetSigner
   | SetChain
   | SetAddress

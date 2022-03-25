@@ -9,6 +9,7 @@ export enum Chain {
 }
 
 export interface AppState {
+  provider?: ethers.providers.Web3Provider
   signer?: ethers.providers.JsonRpcSigner
   chain?: Chain
   testnet: boolean

@@ -16,8 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@/app/*": ["app/*"],
+      "@/artifacts/*": ["artifacts/*"],
       "@/components/*": ["components/*"],
-      "@/artifacts/*": ["features/*"],
       "@/utils/*": ["utils/*"],
       "@/types/*": ["types/*"]
     }

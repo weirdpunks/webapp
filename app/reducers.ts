@@ -1,6 +1,7 @@
 import {
   AppActions,
   ActionType,
+  SetProvider,
   SetSigner,
   SetChain,
   SetAddress,
@@ -14,6 +15,8 @@ import { ethers } from 'ethers'
 
 export const appReducer = (state: AppState, action: AppActions): AppState => {
   switch (action.type) {
+    case ActionType.SetProvider:
+      return { ...state, provider: action.payload }
     case ActionType.SetSigner:
       return { ...state, signer: action.payload }
     case ActionType.SetChain:
@@ -62,6 +65,10 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
       return state
   }
 }
+
+export const setProvider = (
+  provider: ethers.providers.Web3Provider
+): SetProvider => ({ type: ActionType.SetProvider, payload: provider })
 
 export const setSigner = (
   signer: ethers.providers.JsonRpcSigner

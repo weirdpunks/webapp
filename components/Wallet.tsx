@@ -1,7 +1,6 @@
-import Address from '@/components/UI/Address'
 import {
   useApp,
-  Chain,
+  setProvider,
   setSigner,
   setAddress,
   setChain,
@@ -9,17 +8,18 @@ import {
   setBalance,
   reset
 } from '@/components/Context'
-import { chains, ChainData } from '@/utils/chains'
+import { chains } from '@/utils/chains'
 import { weird, openSea } from '@/utils/contracts'
+import { providerOptions } from '@/utils/wallet'
 import { mumbai, rinkeby, polygon, ethereum } from '@/utils/mappings'
 import { ethers } from 'ethers'
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import WalletLink from 'walletlink'
 import Web3Modal from 'web3modal'
-import { useColorMode, useDisclosure } from '@chakra-ui/react'
-import { useCallback, useEffect, useState } from 'react'
-import { erc20abi } from '../artifacts/erc20'
-import { erc1155abi } from '../artifacts/erc1155'
+import { useColorMode } from '@chakra-ui/react'
+import { useCallback, useEffect } from 'react'
+import { erc20abi } from '@/artifacts/erc20'
+import { erc1155abi } from '@/artifacts/erc1155'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -27,69 +27,77 @@ const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 const Wallet = () => {
   const { colorMode } = useColorMode()
   const { state, dispatch } = useApp()
-  const { address, testnet, loading } = state
-  const [provider, setProvider] =
-    useState<ethers.providers.Web3Provider | null>(null)
+  const { address, testnet, provider, signer, loading } = state
 
-  const connect = useCallback(async () => {
-    const providerOptions = {
-      walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-          infuraId
-        }
-      },
-      walletlink: {
-        package: WalletLink,
-        options: {
-          appName: 'Weird Punks',
-          infuraId
-        }
+  const loadProvider = useCallback(
+    async (chain: string = 'mainnet') => {
+      let options = {
+        network: chain,
+        cacheProvider,
+        theme: colorMode === 'dark' ? 'dark' : 'light',
+        providerOptions
       }
-    }
-    const web3Modal = new Web3Modal({
-      // network: chain === Chain.unknown ? Chain.polygon : chain,
-      cacheProvider,
-      theme: colorMode === 'dark' ? 'dark' : 'light',
-      providerOptions
-    })
-    const instance = await web3Modal.connect()
-    const walletProvider = new ethers.providers.Web3Provider(instance)
-    const newSigner = walletProvider.getSigner()
-    const accounts = await walletProvider.listAccounts()
-    const { chainId } = await walletProvider.getNetwork()
-    const found = chains.find((i) => i.key === `0x${chainId.toString(16)}`)
-    dispatch(setSigner(newSigner))
-    dispatch(setAddress(accounts[0]))
-    if (found) {
-      dispatch(setChain({ chain: found.id, isTestnet: Boolean(found.testnet) }))
-    }
-    setProvider(walletProvider)
-  }, [dispatch, colorMode])
+      const web3Modal = new Web3Modal(options)
+      const instance = await web3Modal.connect()
+      const walletProvider = new ethers.providers.Web3Provider(instance)
+      dispatch(setProvider(walletProvider))
+    },
+    [dispatch, colorMode]
+  )
+
+  // const subscribe = useCallback(async () => {
+  //   if (!provider?.on) {
+  //     console.log('the provider is not "on" it')
+  //     return
+  //   }
+  //   console.log('subscribe() waiting on events')
+  //   provider.on('disconnect', (error: { code: number; message: string }) => {
+  //     dispatch(reset())
+  //     console.log(`Disconnecting... [${error.code}] ${error.message}`)
+  //   })
+  //   provider.on('accountsChanged', async (accounts: string[]) => {
+  //     dispatch(setAddress(accounts[0]))
+  //     console.log(`Active account has been changed... ${accounts[0]}`)
+  //   })
+  //   provider.on('chainChanged', (chainId: number) => {
+  //     const chainKey = `0x${chainId.toString(16)}`
+  //     const found = chains.find((i) => i.key === chainKey)
+  //     if (found) {
+  //       dispatch(
+  //         setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
+  //       )
+  //       console.log(`Active chain has been changed... ${found.value}`)
+  //     }
+  //   })
+  // }, [dispatch, provider])
 
   useEffect(() => {
-    const checkCache = async () => {
-      await connect()
+    const load = async () => {
+      await loadProvider()
     }
-    if (loading && cacheProvider) {
+    if (loading) {
+      load()
+    } else if (address === '' && cacheProvider) {
       if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
-        checkCache()
+        load()
       }
     }
-  }, [loading, connect])
+  }, [address, loading, loadProvider])
 
   useEffect(() => {
     const subscribe = async () => {
       if (!provider?.on) {
+        console.log('the provider is not "on" it')
         return
       }
-
+      console.log('subscribe() waiting on events')
       provider.on('disconnect', (error: { code: number; message: string }) => {
         dispatch(reset())
-        console.log(error)
+        console.log(`Disconnecting... [${error.code}] ${error.message}`)
       })
       provider.on('accountsChanged', async (accounts: string[]) => {
         dispatch(setAddress(accounts[0]))
+        console.log(`Active account has been changed... ${accounts[0]}`)
       })
       provider.on('chainChanged', (chainId: number) => {
         const chainKey = `0x${chainId.toString(16)}`
@@ -98,13 +106,46 @@ const Wallet = () => {
           dispatch(
             setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
           )
+          console.log(`Active chain has been changed... ${found.value}`)
         }
       })
     }
-    if (provider) {
-      subscribe()
+
+    const loadSigner = async () => {
+      if (provider !== undefined) {
+        await subscribe()
+        const walletSigner = provider.getSigner()
+        dispatch(setSigner(walletSigner))
+
+        const accounts = await provider.listAccounts()
+        dispatch(setAddress(accounts[0]))
+
+        const { chainId } = await provider.getNetwork()
+        const found = chains.find((i) => i.key === `0x${chainId.toString(16)}`)
+        if (found) {
+          dispatch(
+            setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
+          )
+        }
+      }
     }
-  }, [provider, dispatch])
+
+    if (!signer) {
+      loadSigner()
+    }
+  }, [provider, signer, dispatch])
+
+  // useEffect(() => {}, [])
+
+  // useEffect(() => {
+  //   const waitForEvents = async () => {
+  //     await subscribe()
+  //   }
+  //   if (provider !== undefined) {
+  //     console.log('we have a provider!')
+  //     waitForEvents()
+  //   }
+  // }, [provider, dispatch, subscribe])
 
   useEffect(() => {
     const getBalance = async ({
