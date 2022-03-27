@@ -1,8 +1,6 @@
 import {
   useApp,
-  setProvider,
-  setSigner,
-  setAddress,
+  setConnection,
   setChain,
   setIds,
   setBalance,
@@ -17,7 +15,7 @@ import WalletConnectProvider from '@walletconnect/web3-provider'
 import WalletLink from 'walletlink'
 import Web3Modal from 'web3modal'
 import { useColorMode } from '@chakra-ui/react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { erc20abi } from '@/artifacts/erc20'
 import { erc1155abi } from '@/artifacts/erc1155'
 
@@ -27,241 +25,218 @@ const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 const Wallet = () => {
   const { colorMode } = useColorMode()
   const { state, dispatch } = useApp()
-  const { address, testnet, provider, signer, loading } = state
+  const { address, isTestnet, provider, signer, isConnecting } = state
 
-  const loadProvider = useCallback(
-    async (chain: string = 'mainnet') => {
-      let options = {
-        network: chain,
-        cacheProvider,
+  const [web3Modal, setWeb3Modal] = useState<Web3Modal>()
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const modal = new Web3Modal({
+        cacheProvider: true,
         theme: colorMode === 'dark' ? 'dark' : 'light',
+        network: 'mainnet',
         providerOptions
-      }
-      const web3Modal = new Web3Modal(options)
-      const instance = await web3Modal.connect()
-      const walletProvider = new ethers.providers.Web3Provider(instance)
-      dispatch(setProvider(walletProvider))
-    },
-    [dispatch, colorMode]
-  )
+      })
 
-  // const subscribe = useCallback(async () => {
-  //   if (!provider?.on) {
-  //     console.log('the provider is not "on" it')
-  //     return
+      setWeb3Modal(modal)
+    }
+  }, [colorMode])
+
+  const connect = useCallback(async () => {
+    const instance = await web3Modal?.connect()
+    const provider = new ethers.providers.Web3Provider(instance)
+    const signer = provider.getSigner()
+    const address = await signer.getAddress()
+    const ens = await provider.lookupAddress(address)
+    const network = await provider.getNetwork()
+    const testnet = Boolean(network.chainId !== 1 && network.chainId !== 137)
+    dispatch(
+      setConnection({
+        instance,
+        provider,
+        signer,
+        chainId: network.chainId,
+        isTestnet: testnet,
+        address,
+        ens: ens ? ens : ''
+      })
+    )
+    // console.log(`${address.toString()} ${JSON.stringify(network)} ${ens}`)
+  }, [dispatch, web3Modal])
+
+  // const disconnect = useCallback(async () => {
+  //   await web3Modal?.clearCachedProvider()
+  //   if (provider?.disconnect && typeof provider.disconnect === 'function') {
+  //     await provider.disconnect()
   //   }
-  //   console.log('subscribe() waiting on events')
-  //   provider.on('disconnect', (error: { code: number; message: string }) => {
-  //     dispatch(reset())
-  //     console.log(`Disconnecting... [${error.code}] ${error.message}`)
-  //   })
-  //   provider.on('accountsChanged', async (accounts: string[]) => {
-  //     dispatch(setAddress(accounts[0]))
-  //     console.log(`Active account has been changed... ${accounts[0]}`)
-  //   })
-  //   provider.on('chainChanged', (chainId: number) => {
-  //     const chainKey = `0x${chainId.toString(16)}`
-  //     const found = chains.find((i) => i.key === chainKey)
-  //     if (found) {
-  //       dispatch(
-  //         setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
-  //       )
-  //       console.log(`Active chain has been changed... ${found.value}`)
-  //     }
-  //   })
-  // }, [dispatch, provider])
+  // }, [provider])
 
   useEffect(() => {
     const load = async () => {
-      await loadProvider()
+      await connect()
     }
-    if (loading) {
-      load()
-    } else if (address === '' && cacheProvider) {
-      if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
+    if (web3Modal) {
+      if (isConnecting) {
         load()
-      }
-    }
-  }, [address, loading, loadProvider])
-
-  useEffect(() => {
-    const subscribe = async () => {
-      if (!provider?.on) {
-        console.log('the provider is not "on" it')
-        return
-      }
-      console.log('subscribe() waiting on events')
-      provider.on('disconnect', (error: { code: number; message: string }) => {
-        dispatch(reset())
-        console.log(`Disconnecting... [${error.code}] ${error.message}`)
-      })
-      provider.on('accountsChanged', async (accounts: string[]) => {
-        dispatch(setAddress(accounts[0]))
-        console.log(`Active account has been changed... ${accounts[0]}`)
-      })
-      provider.on('chainChanged', (chainId: number) => {
-        const chainKey = `0x${chainId.toString(16)}`
-        const found = chains.find((i) => i.key === chainKey)
-        if (found) {
-          dispatch(
-            setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
-          )
-          console.log(`Active chain has been changed... ${found.value}`)
-        }
-      })
-    }
-
-    const loadSigner = async () => {
-      if (provider !== undefined) {
-        await subscribe()
-        const walletSigner = provider.getSigner()
-        dispatch(setSigner(walletSigner))
-
-        const accounts = await provider.listAccounts()
-        dispatch(setAddress(accounts[0]))
-
-        const { chainId } = await provider.getNetwork()
-        const found = chains.find((i) => i.key === `0x${chainId.toString(16)}`)
-        if (found) {
-          dispatch(
-            setChain({ chain: found.id, isTestnet: Boolean(found.testnet) })
-          )
+      } else if (address === '' && cacheProvider) {
+        if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
+          load()
         }
       }
     }
-
-    if (!signer) {
-      loadSigner()
-    }
-  }, [provider, signer, dispatch])
-
-  // useEffect(() => {}, [])
+  }, [web3Modal, address, isConnecting, connect])
 
   // useEffect(() => {
-  //   const waitForEvents = async () => {
-  //     await subscribe()
+  //   if (provider?.on) {
+  //     // const handleAccountsChanged = (accounts: string[]) => {
+  //     //   // eslint-disable-next-line no-console
+  //     //   console.log('accountsChanged', accounts)
+  //     // }
+  //     // const handleChainChanged = (_hexChainId: string) => {
+  //     //   window.location.reload()
+  //     // }
+
+  //     // const handleDisconnect = (error: { code: number; message: string }) => {
+  //     //   // eslint-disable-next-line no-console
+  //     //   console.log('disconnect', error)
+  //     //   // disconnect()
+  //     // }
+
+  //     // provider.on('accountsChanged', handleAccountsChanged)
+  //     // provider.on('chainChanged', handleChainChanged)
+  //     // provider.on('disconnect', handleDisconnect)
+  //     provider.on('accountsChanged', (accounts: string[]) =>
+  //       console.log(accounts.toString())
+  //     )
+  //     provider.on('chainChanged', () => console.log('chain changed'))
+  //     provider.on('disconnect', () => console.log('disconnect'))
+  //     console.log('provider active')
+
+  //     return () => {
+  //       // if (provider.removeListener) {
+  //       //   provider.removeListener('accountsChanged', handleAccountsChanged)
+  //       //   provider.removeListener('chainChanged', handleChainChanged)
+  //       //   provider.removeListener('disconnect', handleDisconnect)
+  //       // }
+  //     }
   //   }
-  //   if (provider !== undefined) {
-  //     console.log('we have a provider!')
-  //     waitForEvents()
-  //   }
-  // }, [provider, dispatch, subscribe])
+  // }, [provider])
 
-  useEffect(() => {
-    const getBalance = async ({
-      contract,
-      provider
-    }: {
-      contract: string
-      provider: ethers.providers.JsonRpcProvider
-    }) => {
-      const erc20 = new ethers.Contract(contract, erc20abi, provider)
-      const balance = await erc20.balanceOf(`${address}`)
-      if (balance) {
-        return Math.floor(parseFloat(ethers.utils.formatUnits(balance, 18)))
-      } else {
-        return 0
-      }
-    }
+  //   useEffect(() => {
+  //     const getBalance = async ({
+  //       contract,
+  //       provider
+  //     }: {
+  //       contract: string
+  //       provider: ethers.providers.JsonRpcProvider
+  //     }) => {
+  //       const erc20 = new ethers.Contract(contract, erc20abi, provider)
+  //       const balance = await erc20.balanceOf(`${address}`)
+  //       if (balance) {
+  //         return Math.floor(parseFloat(ethers.utils.formatUnits(balance, 18)))
+  //       } else {
+  //         return 0
+  //       }
+  //     }
 
-    interface Map {
-      id: number
-      osid: string
-    }
+  //     interface Map {
+  //       id: number
+  //       osid: string
+  //     }
 
-    const getOpenSeaIds = async ({
-      mapping,
-      os,
-      isLayer2,
-      provider
-    }: {
-      mapping: Map[]
-      os: string
-      isLayer2: boolean
-      provider: ethers.providers.JsonRpcProvider
-    }) => {
-      let addresses = []
-      let ids = []
-      for (let i = 0; i < mapping.length; i++) {
-        addresses.push(address)
-        ids.push(mapping[i].osid)
-      }
-      const erc1155 = new ethers.Contract(os, erc1155abi, provider)
-      const balance = await erc1155.balanceOfBatch(addresses, ids)
-      let found = []
-      for (let i = 0; i < balance.length; i++) {
-        if (balance[i].toString() === '1') {
-          found.push(mapping[i].id)
-        }
-      }
-      if (found.length > 0) {
-        dispatch(setIds({ ids: found, isLayer2, isOpenSea: true }))
-      }
-    }
+  //     const getOpenSeaIds = async ({
+  //       mapping,
+  //       os,
+  //       isLayer2,
+  //       provider
+  //     }: {
+  //       mapping: Map[]
+  //       os: string
+  //       isLayer2: boolean
+  //       provider: ethers.providers.JsonRpcProvider
+  //     }) => {
+  //       let addresses = []
+  //       let ids = []
+  //       for (let i = 0; i < mapping.length; i++) {
+  //         addresses.push(address)
+  //         ids.push(mapping[i].osid)
+  //       }
+  //       const erc1155 = new ethers.Contract(os, erc1155abi, provider)
+  //       const balance = await erc1155.balanceOfBatch(addresses, ids)
+  //       let found = []
+  //       for (let i = 0; i < balance.length; i++) {
+  //         if (balance[i].toString() === '1') {
+  //           found.push(mapping[i].id)
+  //         }
+  //       }
+  //       if (found.length > 0) {
+  //         dispatch(setIds({ ids: found, isLayer2, isOpenSea: true }))
+  //       }
+  //     }
 
-    const loadAssets = async () => {
-      const mainnet = testnet
-        ? {
-            url: `https://goerli.infura.io/v3/${infuraId}`,
-            contract: weird.goerli,
-            os: openSea.rinkeby,
-            mapping: rinkeby
-          }
-        : {
-            url: `https://mainnet.infura.io/v3/${infuraId}`,
-            contract: weird.mainnet,
-            os: openSea.mainnet,
-            mapping: ethereum
-          }
-      const layer2 = testnet
-        ? {
-            url: `https://polygon-mumbai.infura.io/v3/${infuraId}`,
-            contract: weird.mumbai,
-            os: openSea.mumbai,
-            mapping: mumbai
-          }
-        : {
-            url: `https://polygon-mainnet.infura.io/v3/${infuraId}`,
-            contract: weird.polygon,
-            os: openSea.polygon,
-            mapping: polygon
-          }
-      const mainnetProvider = new ethers.providers.JsonRpcProvider(mainnet.url)
-      const layer2Provider = new ethers.providers.JsonRpcProvider(layer2.url)
-      const weirdMainnet = await getBalance({
-        contract: mainnet.contract,
-        provider: mainnetProvider
-      })
-      if (weirdMainnet > 0) {
-        dispatch(setBalance({ balance: weirdMainnet, isLayer2: false }))
-      }
-      const weirdLayer2 = await getBalance({
-        contract: layer2.contract,
-        provider: layer2Provider
-      })
-      if (weirdLayer2 > 0) {
-        dispatch(setBalance({ balance: weirdLayer2, isLayer2: true }))
-      }
-      await getOpenSeaIds({
-        mapping: mainnet.mapping,
-        os: mainnet.os,
-        isLayer2: false,
-        provider: mainnetProvider
-      })
-      await getOpenSeaIds({
-        mapping: layer2.mapping,
-        os: layer2.os,
-        isLayer2: true,
-        provider: layer2Provider
-      })
-    }
+  //     const loadAssets = async () => {
+  //       const mainnet = isTestnet
+  //         ? {
+  //             url: `https://goerli.infura.io/v3/${infuraId}`,
+  //             contract: weird.goerli,
+  //             os: openSea.rinkeby,
+  //             mapping: rinkeby
+  //           }
+  //         : {
+  //             url: `https://mainnet.infura.io/v3/${infuraId}`,
+  //             contract: weird.mainnet,
+  //             os: openSea.mainnet,
+  //             mapping: ethereum
+  //           }
+  //       const layer2 = isTestnet
+  //         ? {
+  //             url: `https://polygon-mumbai.infura.io/v3/${infuraId}`,
+  //             contract: weird.mumbai,
+  //             os: openSea.mumbai,
+  //             mapping: mumbai
+  //           }
+  //         : {
+  //             url: `https://polygon-mainnet.infura.io/v3/${infuraId}`,
+  //             contract: weird.polygon,
+  //             os: openSea.polygon,
+  //             mapping: polygon
+  //           }
+  //       const mainnetProvider = new ethers.providers.JsonRpcProvider(mainnet.url)
+  //       const layer2Provider = new ethers.providers.JsonRpcProvider(layer2.url)
+  //       const weirdMainnet = await getBalance({
+  //         contract: mainnet.contract,
+  //         provider: mainnetProvider
+  //       })
+  //       if (weirdMainnet > 0) {
+  //         dispatch(setBalance({ balance: weirdMainnet, isLayer2: false }))
+  //       }
+  //       const weirdLayer2 = await getBalance({
+  //         contract: layer2.contract,
+  //         provider: layer2Provider
+  //       })
+  //       if (weirdLayer2 > 0) {
+  //         dispatch(setBalance({ balance: weirdLayer2, isLayer2: true }))
+  //       }
+  //       await getOpenSeaIds({
+  //         mapping: mainnet.mapping,
+  //         os: mainnet.os,
+  //         isLayer2: false,
+  //         provider: mainnetProvider
+  //       })
+  //       await getOpenSeaIds({
+  //         mapping: layer2.mapping,
+  //         os: layer2.os,
+  //         isLayer2: true,
+  //         provider: layer2Provider
+  //       })
+  //     }
 
-    if (address !== '') {
-      loadAssets()
-    }
-  }, [testnet, address, dispatch])
+  //     if (address !== '') {
+  //       loadAssets()
+  //     }
+  //   }, [isTestnet, address, dispatch])
 
-  return null
+  return <div></div>
 }
 
 export default Wallet

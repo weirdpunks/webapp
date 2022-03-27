@@ -1,16 +1,33 @@
-import { Chain } from '@/app/state'
 import { ethers } from 'ethers'
 
 export enum ActionType {
+  StartConnecting,
+  SetConnection,
   SetProvider,
   SetInstance,
   SetSigner,
   SetChain,
-  SetAddress,
+  SetAccount,
   SetIds,
   SetBalance,
-  SetStatus,
   Reset
+}
+
+export interface StartConnecting {
+  type: ActionType.StartConnecting
+}
+
+export interface SetConnection {
+  type: ActionType.SetConnection
+  payload: {
+    instance: ethers.providers.Web3Provider
+    provider: ethers.providers.Web3Provider
+    signer: ethers.providers.JsonRpcSigner
+    chainId: number
+    isTestnet: boolean
+    address: string
+    ens: string
+  }
 }
 
 export interface SetProvider {
@@ -26,14 +43,17 @@ export interface SetSigner {
 export interface SetChain {
   type: ActionType.SetChain
   payload: {
-    chain: Chain
+    chainId: number
     isTestnet: boolean
   }
 }
 
-export interface SetAddress {
-  type: ActionType.SetAddress
-  payload: string
+export interface SetAccount {
+  type: ActionType.SetAccount
+  payload: {
+    address: string
+    ens: string
+  }
 }
 
 export interface SetIds {
@@ -53,21 +73,17 @@ export interface SetBalance {
   }
 }
 
-export interface SetStatus {
-  type: ActionType.SetStatus
-  payload: boolean
-}
-
 export interface Reset {
   type: ActionType.Reset
 }
 
 export type AppActions =
+  | StartConnecting
+  | SetConnection
   | SetProvider
   | SetSigner
   | SetChain
-  | SetAddress
+  | SetAccount
   | SetIds
   | SetBalance
-  | SetStatus
   | Reset

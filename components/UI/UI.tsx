@@ -1,3 +1,4 @@
+import Events from '@/components/Events'
 import Wallet from '@/components/Wallet'
 import Bar from '@/components/UI/Bar'
 import Footer from '@/components/UI/Footer'
@@ -17,6 +18,7 @@ const UI = ({ children }: { children: ReactNode }) => {
         />
         <link rel='icon' href='/favicon.gif' type='image/gif' />
       </Head>
+      <Events />
       <Wallet />
       <Bar />
       <Container maxW='4xl'>{children}</Container>

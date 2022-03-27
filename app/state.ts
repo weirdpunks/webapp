@@ -9,12 +9,12 @@ export enum Chain {
 }
 
 export interface AppState {
+  instance?: ethers.providers.Web3Provider
   provider?: ethers.providers.Web3Provider
   signer?: ethers.providers.JsonRpcSigner
-  chain?: Chain
-  testnet: boolean
+  chainId?: number
+  isTestnet: boolean
   address: string
-  loading: boolean
   ens: string
   weirdMainnet: number
   weirdLayer2: number
@@ -23,12 +23,14 @@ export interface AppState {
   osLayer2: number[]
   weirdPunksMainnet: number[]
   weirdPunksLayer2: number[]
+  isConnecting: boolean
+  isLoadingBalances: boolean
 }
 
 export const initialAppState: AppState = {
-  testnet: false,
+  chainId: 0,
+  isTestnet: false,
   address: '',
-  loading: false,
   ens: '',
   weirdMainnet: 0,
   weirdLayer2: 0,
@@ -36,5 +38,7 @@ export const initialAppState: AppState = {
   osMainnet: [],
   osLayer2: [],
   weirdPunksMainnet: [],
-  weirdPunksLayer2: []
+  weirdPunksLayer2: [],
+  isConnecting: false,
+  isLoadingBalances: true
 }

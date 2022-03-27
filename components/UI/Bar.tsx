@@ -27,7 +27,7 @@ const Bar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { colorMode, toggleColorMode } = useColorMode()
   const { state } = useApp()
-  const { testnet } = state
+  const { isTestnet } = state
 
   return (
     <>
@@ -77,7 +77,7 @@ const Bar = () => {
           </Box>
         ) : null}
       </Box>
-      {testnet && (
+      {isTestnet && (
         <Alert status='warning'>
           <AlertIcon />
           You are currently on testnet.

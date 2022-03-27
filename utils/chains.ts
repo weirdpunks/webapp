@@ -14,29 +14,34 @@ export interface ChainParameter {
 }
 
 export interface ChainData {
-  id: Chain
-  key: string
-  value: string
+  id: number
+  hex: string
+  key: Chain
+  title: string
   icon: 'eth' | 'polygon'
   explorer: string
-  testnet?: boolean
+  isTestnet: boolean
   parameter?: ChainParameter
 }
 
 export const chains: ChainData[] = [
   {
-    id: Chain.mainnet,
-    key: '0x1',
-    value: 'Ethereum',
+    id: 1,
+    key: Chain.mainnet,
+    hex: '0x1',
+    title: 'Ethereum',
     icon: 'eth',
-    explorer: 'https://etherscan.io'
+    explorer: 'https://etherscan.io',
+    isTestnet: false
   },
   {
-    id: Chain.polygon,
-    key: '0x89',
-    value: 'Polygon',
+    id: 137,
+    key: Chain.polygon,
+    hex: '0x89',
+    title: 'Polygon',
     icon: 'polygon',
     explorer: 'https://polygonscan.com',
+    isTestnet: false,
     parameter: {
       chainId: '0x89',
       chainName: 'Polygon Mainnet',
@@ -50,27 +55,30 @@ export const chains: ChainData[] = [
     }
   },
   {
-    id: Chain.rinkeby,
-    key: '0x4',
-    value: 'Rinkeby Testnet',
+    id: 4,
+    key: Chain.rinkeby,
+    hex: '0x4',
+    title: 'Rinkeby Testnet',
     icon: 'eth',
     explorer: 'https://rinkeby.etherscan.io',
-    testnet: true
+    isTestnet: true
   },
   {
-    id: Chain.goerli,
-    key: '0x5',
-    value: 'Goerli Testnet',
+    id: 5,
+    key: Chain.goerli,
+    hex: '0x5',
+    title: 'Goerli Testnet',
     icon: 'eth',
     explorer: 'https://goerli.etherscan.io',
-    testnet: true
+    isTestnet: true
   },
   {
-    id: Chain.mumbai,
-    key: '0x13881',
-    value: 'Mumbai',
+    id: 80001,
+    key: Chain.mumbai,
+    hex: '0x13881',
+    title: 'Mumbai',
     icon: 'polygon',
     explorer: 'https://mumbai.polygonscan.com',
-    testnet: true
+    isTestnet: true
   }
 ]

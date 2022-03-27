@@ -1,20 +1,35 @@
 import {
   AppActions,
   ActionType,
+  StartConnecting,
+  SetConnection,
   SetProvider,
   SetSigner,
   SetChain,
-  SetAddress,
+  SetAccount,
   SetIds,
   SetBalance,
-  SetStatus,
   Reset
 } from '@/app/actions'
-import { initialAppState, AppState, Chain } from '@/app/state'
+import { initialAppState, AppState } from '@/app/state'
 import { ethers } from 'ethers'
 
 export const appReducer = (state: AppState, action: AppActions): AppState => {
   switch (action.type) {
+    case ActionType.StartConnecting:
+      return { ...state, isConnecting: true }
+    case ActionType.SetConnection:
+      return {
+        ...state,
+        instance: action.payload.instance,
+        provider: action.payload.provider,
+        signer: action.payload.signer,
+        chainId: action.payload.chainId,
+        isTestnet: action.payload.isTestnet,
+        address: action.payload.address,
+        ens: action.payload.ens,
+        isConnecting: false
+      }
     case ActionType.SetProvider:
       return { ...state, provider: action.payload }
     case ActionType.SetSigner:
@@ -22,11 +37,15 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
     case ActionType.SetChain:
       return {
         ...state,
-        chain: action.payload.chain,
-        testnet: action.payload.isTestnet
+        chainId: action.payload.chainId,
+        isTestnet: action.payload.isTestnet
       }
-    case ActionType.SetAddress:
-      return { ...state, address: action.payload }
+    case ActionType.SetAccount:
+      return {
+        ...state,
+        address: action.payload.address,
+        ens: action.payload.ens
+      }
     case ActionType.SetIds:
       return {
         ...state,
@@ -57,14 +76,45 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
           ? action.payload.balance
           : state.weirdLayer2
       }
-    case ActionType.SetStatus:
-      return { ...state, loading: action.payload }
     case ActionType.Reset:
       return initialAppState
     default:
       return state
   }
 }
+
+export const startConnecting = (): StartConnecting => ({
+  type: ActionType.StartConnecting
+})
+
+export const setConnection = ({
+  instance,
+  provider,
+  signer,
+  chainId,
+  isTestnet,
+  address,
+  ens
+}: {
+  instance: ethers.providers.Web3Provider
+  provider: ethers.providers.Web3Provider
+  signer: ethers.providers.JsonRpcSigner
+  chainId: number
+  isTestnet: boolean
+  address: string
+  ens: string
+}): SetConnection => ({
+  type: ActionType.SetConnection,
+  payload: {
+    instance,
+    provider,
+    signer,
+    chainId,
+    isTestnet,
+    address,
+    ens
+  }
+})
 
 export const setProvider = (
   provider: ethers.providers.Web3Provider
@@ -78,19 +128,19 @@ export const setSigner = (
 })
 
 export const setChain = ({
-  chain,
+  chainId,
   isTestnet
 }: {
-  chain: Chain
+  chainId: number
   isTestnet: boolean
 }): SetChain => ({
   type: ActionType.SetChain,
-  payload: { chain, isTestnet }
+  payload: { chainId, isTestnet }
 })
 
-export const setAddress = (address: string): SetAddress => ({
-  type: ActionType.SetAddress,
-  payload: address
+export const setAccount = (address: string, ens: string): SetAccount => ({
+  type: ActionType.SetAccount,
+  payload: { address, ens }
 })
 
 export const setIds = ({
@@ -122,11 +172,6 @@ export const setBalance = ({
     balance,
     isLayer2
   }
-})
-
-export const setStatus = (loading: boolean): SetStatus => ({
-  type: ActionType.SetStatus,
-  payload: loading
 })
 
 export const reset = (): Reset => ({

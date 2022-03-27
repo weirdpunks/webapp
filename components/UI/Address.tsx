@@ -5,12 +5,13 @@ import { useEffect, useState } from 'react'
 
 interface AddressProps {
   address?: string
+  ens?: string
   avatar?: string
   size?: number
   copyable?: boolean
 }
 
-const Address = ({ address, avatar, size, copyable }: AddressProps) => {
+const Address = ({ address, ens, avatar, size, copyable }: AddressProps) => {
   const [isClicked, setIsClicked] = useState(false)
 
   if (!address) return <Skeleton />
@@ -50,7 +51,7 @@ const Address = ({ address, avatar, size, copyable }: AddressProps) => {
         alignItems: 'center'
       }}>
       {avatar === 'left' && <Blockie address={address} size={size} />}
-      <p>{size ? getEllipsisTxt(address, 4) : address}</p>
+      <p>{ens !== '' ? ens : size ? getEllipsisTxt(address, 4) : address}</p>
       {avatar === 'right' && <Blockie address={address} size={size} />}
       {copyable && (isClicked ? <Check /> : <Copy />)}
     </div>

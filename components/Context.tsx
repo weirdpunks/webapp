@@ -1,24 +1,26 @@
 import { Chain, AppState, initialAppState } from '@/app/state'
 import {
   ActionType,
+  StartConnecting,
+  SetConnection,
   SetProvider,
   SetSigner,
   SetChain,
-  SetAddress,
+  SetAccount,
   SetIds,
   SetBalance,
-  SetStatus,
   AppActions
 } from '@/app/actions'
 import {
   appReducer,
+  startConnecting,
+  setConnection,
   setProvider,
   setSigner,
   setChain,
-  setAddress,
+  setAccount,
   setIds,
   setBalance,
-  setStatus,
   reset
 } from '@/app/reducers'
 import { AppContext } from '@/app/context'
@@ -26,13 +28,14 @@ import { useContext, useMemo, useReducer, ReactNode } from 'react'
 
 export type {
   AppState,
+  StartConnecting,
+  SetConnection,
   SetProvider,
   SetSigner,
   SetChain,
-  SetAddress,
+  SetAccount,
   SetIds,
   SetBalance,
-  SetStatus,
   AppActions
 }
 
@@ -42,13 +45,14 @@ export {
   initialAppState,
   ActionType,
   appReducer,
+  startConnecting,
+  setConnection,
   setProvider,
   setSigner,
   setChain,
-  setAddress,
+  setAccount,
   setIds,
   setBalance,
-  setStatus,
   reset
 }
 

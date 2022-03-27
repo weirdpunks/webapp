@@ -9,16 +9,16 @@ const displayTestnets = false
 
 const ChainComponent = () => {
   const { state, dispatch } = useApp()
-  const { chain, signer } = state
+  const { chainId, signer } = state
 
-  const [selectedChain, setSelectedChain] = useState<ChainData | undefined>()
+  const [selectedChain, setSelectedChain] = useState<ChainData>()
 
   useEffect(() => {
-    if (chain) {
-      const newChain = chains.find((i) => i.id === chain)
+    if (chainId) {
+      const newChain = chains.find((i) => i.id === chainId)
       setSelectedChain(newChain)
     }
-  }, [chain])
+  }, [chainId])
 
   interface SwitchNetworkError {
     code?: number
@@ -37,8 +37,8 @@ const ChainComponent = () => {
           if (newChain) {
             dispatch(
               setChain({
-                chain: newChain.id,
-                isTestnet: Boolean(newChain.testnet)
+                chainId: newChain.id,
+                isTestnet: Boolean(newChain.isTestnet)
               })
             )
           }
@@ -53,12 +53,12 @@ const ChainComponent = () => {
                     method: 'wallet_addEthereumChain',
                     params: newChain.parameter
                   })
-                  dispatch(
-                    setChain({
-                      chain: newChain.id,
-                      isTestnet: Boolean(newChain.testnet)
-                    })
-                  )
+                  // dispatch(
+                  //   setChain({
+                  //     chain: newChain.id,
+                  //     isTestnet: Boolean(newChain.testnet)
+                  //   })
+                  // )
                 }
               } catch (addError) {
                 console.log('Unable to add network')
@@ -79,20 +79,20 @@ const ChainComponent = () => {
             isActive={isOpen}
             as={Button}
             rightIcon={<ChevronDownIcon />}>
-            {selectedChain ? selectedChain.value : 'Switch Chain'}
+            {selectedChain ? selectedChain.title : 'Switch Chain'}
           </MenuButton>
           <MenuList>
             <>
               {chains.map(
                 (item) =>
-                  (!item.testnet || (item.testnet && displayTestnets)) && (
+                  (!item.isTestnet || (item.isTestnet && displayTestnets)) && (
                     <MenuItem
                       key={item.key}
                       icon={
                         item.icon === 'polygon' ? <PolygonLogo /> : <ETHLogo />
                       }
                       onClick={() => handleSwitchNetwork(item.key)}>
-                      {item.value}
+                      {item.title}
                     </MenuItem>
                   )
               )}
