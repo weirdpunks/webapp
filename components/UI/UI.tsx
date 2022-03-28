@@ -1,8 +1,6 @@
-import Events from '@/components/Events'
 import Wallet from '@/components/Wallet'
 import Bar from '@/components/UI/Bar'
 import Footer from '@/components/UI/Footer'
-// import AccountModal from '@/components/UI/AccountModal'
 import { ReactNode } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 import Head from 'next/head'
@@ -18,12 +16,10 @@ const UI = ({ children }: { children: ReactNode }) => {
         />
         <link rel='icon' href='/favicon.gif' type='image/gif' />
       </Head>
-      <Events />
       <Wallet />
       <Bar />
       <Container maxW='4xl'>{children}</Container>
       <Footer />
-      {/* <AccountModal /> */}
     </Box>
   )
 }

@@ -6,9 +6,11 @@ import {
   SetProvider,
   SetSigner,
   SetChain,
-  SetAccount,
+  SetAddress,
+  SetENS,
   SetIds,
   SetBalance,
+  SetBalances,
   AppActions
 } from '@/app/actions'
 import {
@@ -18,9 +20,11 @@ import {
   setProvider,
   setSigner,
   setChain,
-  setAccount,
+  setAddress,
+  setENS,
   setIds,
   setBalance,
+  setBalances,
   reset
 } from '@/app/reducers'
 import { AppContext } from '@/app/context'
@@ -33,9 +37,11 @@ export type {
   SetProvider,
   SetSigner,
   SetChain,
-  SetAccount,
+  SetAddress,
+  SetENS,
   SetIds,
   SetBalance,
+  SetBalances,
   AppActions
 }
 
@@ -50,9 +56,11 @@ export {
   setProvider,
   setSigner,
   setChain,
-  setAccount,
+  setAddress,
+  setENS,
   setIds,
   setBalance,
+  setBalances,
   reset
 }
 

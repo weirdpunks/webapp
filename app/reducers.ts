@@ -6,9 +6,11 @@ import {
   SetProvider,
   SetSigner,
   SetChain,
-  SetAccount,
+  SetAddress,
+  SetENS,
   SetIds,
   SetBalance,
+  SetBalances,
   Reset
 } from '@/app/actions'
 import { initialAppState, AppState } from '@/app/state'
@@ -27,7 +29,6 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         chainId: action.payload.chainId,
         isTestnet: action.payload.isTestnet,
         address: action.payload.address,
-        ens: action.payload.ens,
         isConnecting: false
       }
     case ActionType.SetProvider:
@@ -40,11 +41,24 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         chainId: action.payload.chainId,
         isTestnet: action.payload.isTestnet
       }
-    case ActionType.SetAccount:
+    case ActionType.SetAddress:
       return {
         ...state,
-        address: action.payload.address,
-        ens: action.payload.ens
+        address: action.payload,
+        ens: '',
+        weirdMainnet: 0,
+        weirdLayer2: 0,
+        unclaimed: 0,
+        osMainnet: [],
+        osLayer2: [],
+        weirdPunksMainnet: [],
+        weirdPunksLayer2: [],
+        isLoadingBalances: true
+      }
+    case ActionType.SetENS:
+      return {
+        ...state,
+        ens: action.payload
       }
     case ActionType.SetIds:
       return {
@@ -76,6 +90,15 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
           ? action.payload.balance
           : state.weirdLayer2
       }
+    case ActionType.SetBalances:
+      return {
+        ...state,
+        weirdMainnet: action.payload.weirdMainnet,
+        weirdLayer2: action.payload.weirdLayer2,
+        osMainnet: action.payload.osMainnet,
+        osLayer2: action.payload.osLayer2,
+        isLoadingBalances: false
+      }
     case ActionType.Reset:
       return initialAppState
     default:
@@ -93,8 +116,7 @@ export const setConnection = ({
   signer,
   chainId,
   isTestnet,
-  address,
-  ens
+  address
 }: {
   instance: ethers.providers.Web3Provider
   provider: ethers.providers.Web3Provider
@@ -102,7 +124,6 @@ export const setConnection = ({
   chainId: number
   isTestnet: boolean
   address: string
-  ens: string
 }): SetConnection => ({
   type: ActionType.SetConnection,
   payload: {
@@ -111,8 +132,7 @@ export const setConnection = ({
     signer,
     chainId,
     isTestnet,
-    address,
-    ens
+    address
   }
 })
 
@@ -138,9 +158,14 @@ export const setChain = ({
   payload: { chainId, isTestnet }
 })
 
-export const setAccount = (address: string, ens: string): SetAccount => ({
-  type: ActionType.SetAccount,
-  payload: { address, ens }
+export const setAddress = (address: string): SetAddress => ({
+  type: ActionType.SetAddress,
+  payload: address
+})
+
+export const setENS = (ens: string): SetENS => ({
+  type: ActionType.SetENS,
+  payload: ens
 })
 
 export const setIds = ({
@@ -171,6 +196,26 @@ export const setBalance = ({
   payload: {
     balance,
     isLayer2
+  }
+})
+
+export const setBalances = ({
+  weirdMainnet,
+  weirdLayer2,
+  osMainnet,
+  osLayer2
+}: {
+  weirdMainnet: number
+  weirdLayer2: number
+  osMainnet: number[]
+  osLayer2: number[]
+}): SetBalances => ({
+  type: ActionType.SetBalances,
+  payload: {
+    weirdMainnet,
+    weirdLayer2,
+    osMainnet,
+    osLayer2
   }
 })
 

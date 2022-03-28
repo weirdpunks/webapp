@@ -40,5 +40,5 @@ export const initialAppState: AppState = {
   weirdPunksMainnet: [],
   weirdPunksLayer2: [],
   isConnecting: false,
-  isLoadingBalances: true
+  isLoadingBalances: false
 }

@@ -7,9 +7,11 @@ export enum ActionType {
   SetInstance,
   SetSigner,
   SetChain,
-  SetAccount,
+  SetAddress,
+  SetENS,
   SetIds,
   SetBalance,
+  SetBalances,
   Reset
 }
 
@@ -26,7 +28,6 @@ export interface SetConnection {
     chainId: number
     isTestnet: boolean
     address: string
-    ens: string
   }
 }
 
@@ -48,12 +49,14 @@ export interface SetChain {
   }
 }
 
-export interface SetAccount {
-  type: ActionType.SetAccount
-  payload: {
-    address: string
-    ens: string
-  }
+export interface SetAddress {
+  type: ActionType.SetAddress
+  payload: string
+}
+
+export interface SetENS {
+  type: ActionType.SetENS
+  payload: string
 }
 
 export interface SetIds {
@@ -73,6 +76,16 @@ export interface SetBalance {
   }
 }
 
+export interface SetBalances {
+  type: ActionType.SetBalances
+  payload: {
+    weirdMainnet: number
+    weirdLayer2: number
+    osMainnet: number[]
+    osLayer2: number[]
+  }
+}
+
 export interface Reset {
   type: ActionType.Reset
 }
@@ -83,7 +96,9 @@ export type AppActions =
   | SetProvider
   | SetSigner
   | SetChain
-  | SetAccount
+  | SetAddress
+  | SetENS
   | SetIds
   | SetBalance
+  | SetBalances
   | Reset
