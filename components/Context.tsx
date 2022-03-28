@@ -11,6 +11,7 @@ import {
   SetIds,
   SetBalance,
   SetBalances,
+  SetTestnetBalances,
   AppActions
 } from '@/app/actions'
 import {
@@ -25,6 +26,7 @@ import {
   setIds,
   setBalance,
   setBalances,
+  setTestnetBalances,
   reset
 } from '@/app/reducers'
 import { AppContext } from '@/app/context'
@@ -42,6 +44,7 @@ export type {
   SetIds,
   SetBalance,
   SetBalances,
+  SetTestnetBalances,
   AppActions
 }
 
@@ -61,6 +64,7 @@ export {
   setIds,
   setBalance,
   setBalances,
+  setTestnetBalances,
   reset
 }
 

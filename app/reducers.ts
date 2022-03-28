@@ -11,6 +11,7 @@ import {
   SetIds,
   SetBalance,
   SetBalances,
+  SetTestnetBalances,
   Reset
 } from '@/app/actions'
 import { initialAppState, AppState } from '@/app/state'
@@ -97,6 +98,16 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         weirdLayer2: action.payload.weirdLayer2,
         osMainnet: action.payload.osMainnet,
         osLayer2: action.payload.osLayer2,
+        isLoadingBalances: false
+      }
+    case ActionType.SetTestnetBalances:
+      return {
+        ...state,
+        weirdMainnet: 0,
+        weirdLayer2: 0,
+        osMainnet: [],
+        osLayer2: [],
+        osTestnet: action.payload.osTestnet,
         isLoadingBalances: false
       }
     case ActionType.Reset:
@@ -216,6 +227,17 @@ export const setBalances = ({
     weirdLayer2,
     osMainnet,
     osLayer2
+  }
+})
+
+export const setTestnetBalances = ({
+  osTestnet
+}: {
+  osTestnet: number[]
+}): SetTestnetBalances => ({
+  type: ActionType.SetTestnetBalances,
+  payload: {
+    osTestnet
   }
 })
 

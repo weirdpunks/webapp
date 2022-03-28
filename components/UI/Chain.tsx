@@ -87,11 +87,11 @@ const ChainComponent = () => {
                 (item) =>
                   (!item.isTestnet || (item.isTestnet && displayTestnets)) && (
                     <MenuItem
-                      key={item.key}
+                      key={item.hex}
                       icon={
                         item.icon === 'polygon' ? <PolygonLogo /> : <ETHLogo />
                       }
-                      onClick={() => handleSwitchNetwork(item.key)}>
+                      onClick={() => handleSwitchNetwork(item.hex)}>
                       {item.title}
                     </MenuItem>
                   )

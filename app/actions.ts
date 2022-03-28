@@ -12,6 +12,7 @@ export enum ActionType {
   SetIds,
   SetBalance,
   SetBalances,
+  SetTestnetBalances,
   Reset
 }
 
@@ -86,6 +87,13 @@ export interface SetBalances {
   }
 }
 
+export interface SetTestnetBalances {
+  type: ActionType.SetTestnetBalances
+  payload: {
+    osTestnet: number[]
+  }
+}
+
 export interface Reset {
   type: ActionType.Reset
 }
@@ -101,4 +109,5 @@ export type AppActions =
   | SetIds
   | SetBalance
   | SetBalances
+  | SetTestnetBalances
   | Reset

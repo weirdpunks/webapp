@@ -20,6 +20,7 @@ import { useColorMode } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
 import { erc20abi } from '@/artifacts/erc20'
 import { erc1155abi } from '@/artifacts/erc1155'
+import { setTestnetBalances } from '@/app/reducers'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -27,7 +28,8 @@ const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 const Wallet = () => {
   const { colorMode } = useColorMode()
   const { state, dispatch } = useApp()
-  const { address, ens, isTestnet, instance, provider, isConnecting } = state
+  const { address, ens, isTestnet, instance, provider, signer, isConnecting } =
+    state
 
   const [web3Modal, setWeb3Modal] = useState<Web3Modal>()
   const [ethereumProvider, setEthereumProvider] =
@@ -227,12 +229,24 @@ const Wallet = () => {
       )
     }
 
+    const getTestBalances = async () => {
+      const mumbaiOSWeirdPunks = await getERC1155BalanceOfBatch({
+        contract: openSea.mumbai,
+        provider: provider,
+        mapping: mumbaiMapping
+      })
+      dispatch(setTestnetBalances({ osTestnet: mumbaiOSWeirdPunks }))
+    }
+
     if (!isTestnet && address !== '' && ethereumProvider && polygonProvider) {
       getBalances()
+    } else if (isTestnet && address !== '' && provider) {
+      getTestBalances()
     }
   }, [
     isTestnet,
     address,
+    provider,
     dispatch,
     ethereumProvider,
     polygonProvider,

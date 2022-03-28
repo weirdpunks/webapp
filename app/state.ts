@@ -21,8 +21,10 @@ export interface AppState {
   unclaimed: number
   osMainnet: number[]
   osLayer2: number[]
+  osTestnet: number[]
   weirdPunksMainnet: number[]
   weirdPunksLayer2: number[]
+  weirdPunksTestnet: number[]
   isConnecting: boolean
   isLoadingBalances: boolean
 }
@@ -37,8 +39,10 @@ export const initialAppState: AppState = {
   unclaimed: 0,
   osMainnet: [],
   osLayer2: [],
+  osTestnet: [],
   weirdPunksMainnet: [],
   weirdPunksLayer2: [],
+  weirdPunksTestnet: [],
   isConnecting: false,
   isLoadingBalances: false
 }

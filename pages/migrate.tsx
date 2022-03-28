@@ -13,26 +13,6 @@ const Migration: NextPage = () => {
         fontSize={{ base: '3xl', sm: '4xl', md: '6xl' }}>
         OpenSea Weird Punks
       </Heading>
-      {osMainnet.length > 0 && (
-        <Stack direction={'row'} align={'center'} justify={'start'}>
-          <Text fontSize={'4xl'} fontWeight={400} p={2}>
-            Ethereum:
-          </Text>
-          <Text fontSize={'xl'} fontWeight={200} p={2}>
-            {`#${osMainnet.join(', #')}`}
-          </Text>
-        </Stack>
-      )}
-      {osLayer2.length > 0 && (
-        <Stack direction={'row'} align={'center'} justify={'start'}>
-          <Text fontSize={'4xl'} fontWeight={400} p={2}>
-            Polygon:
-          </Text>
-          <Text fontSize={'xl'} fontWeight={200} p={2}>{`#${osLayer2.join(
-            ', #'
-          )}`}</Text>
-        </Stack>
-      )}
       <OpenSeaMigration />
     </Box>
   )
