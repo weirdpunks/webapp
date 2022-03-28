@@ -1,15 +1,11 @@
-import { Chain, AppState, initialAppState } from '@/app/state'
+import { AppState, initialAppState } from '@/app/state'
 import {
   ActionType,
   StartConnecting,
   SetConnection,
-  SetProvider,
-  SetSigner,
   SetChain,
   SetAddress,
   SetENS,
-  SetIds,
-  SetBalance,
   SetBalances,
   SetTestnetBalances,
   AppActions
@@ -18,13 +14,9 @@ import {
   appReducer,
   startConnecting,
   setConnection,
-  setProvider,
-  setSigner,
   setChain,
   setAddress,
   setENS,
-  setIds,
-  setBalance,
   setBalances,
   setTestnetBalances,
   reset
@@ -36,13 +28,9 @@ export type {
   AppState,
   StartConnecting,
   SetConnection,
-  SetProvider,
-  SetSigner,
   SetChain,
   SetAddress,
   SetENS,
-  SetIds,
-  SetBalance,
   SetBalances,
   SetTestnetBalances,
   AppActions
@@ -50,19 +38,14 @@ export type {
 
 export {
   AppContext,
-  Chain,
   initialAppState,
   ActionType,
   appReducer,
   startConnecting,
   setConnection,
-  setProvider,
-  setSigner,
   setChain,
   setAddress,
   setENS,
-  setIds,
-  setBalance,
   setBalances,
   setTestnetBalances,
   reset

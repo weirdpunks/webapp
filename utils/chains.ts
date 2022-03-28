@@ -1,4 +1,10 @@
-import { Chain } from '@/components/Context'
+export enum Chain {
+  mainnet = 'mainnet',
+  polygon = 'polygon',
+  goerli = 'goerli',
+  rinkeby = 'rinkeby',
+  mumbai = 'mumbai'
+}
 
 export interface ChainParameter {
   chainId: string // A 0x-prefixed hexadecimal string
@@ -58,7 +64,7 @@ export const chains: ChainData[] = [
     id: 4,
     key: Chain.rinkeby,
     hex: '0x4',
-    title: 'Rinkeby Testnet',
+    title: 'Rinkeby',
     icon: 'eth',
     explorer: 'https://rinkeby.etherscan.io',
     isTestnet: true
@@ -67,7 +73,7 @@ export const chains: ChainData[] = [
     id: 5,
     key: Chain.goerli,
     hex: '0x5',
-    title: 'Goerli Testnet',
+    title: 'Goerli',
     icon: 'eth',
     explorer: 'https://goerli.etherscan.io',
     isTestnet: true

@@ -1,13 +1,5 @@
 import { ethers } from 'ethers'
 
-export enum Chain {
-  mainnet = 'mainnet',
-  polygon = 'polygon',
-  goerli = 'goerli',
-  rinkeby = 'rinkeby',
-  mumbai = 'mumbai'
-}
-
 export interface AppState {
   instance?: ethers.providers.Web3Provider
   provider?: ethers.providers.Web3Provider
@@ -16,15 +8,20 @@ export interface AppState {
   isTestnet: boolean
   address: string
   ens: string
-  weirdMainnet: number
-  weirdLayer2: number
+  weirdEthereum: number
+  weirdPolygon: number
+  weirdGoerli: number
+  weirdMumbai: number
   unclaimed: number
-  osMainnet: number[]
-  osLayer2: number[]
-  osTestnet: number[]
-  weirdPunksMainnet: number[]
-  weirdPunksLayer2: number[]
-  weirdPunksTestnet: number[]
+  osEthereum: number[]
+  osPolygon: number[]
+  osRinkeby: number[]
+  osMumbai: number[]
+  weirdPunksEthereum: number[]
+  weirdPunksPolygon: number[]
+  weirdPunksMumbai: number[]
+  weirdPunksGoerli: number[]
+  weirdPunksRinkeby: number[]
   isConnecting: boolean
   isLoadingBalances: boolean
 }
@@ -34,15 +31,20 @@ export const initialAppState: AppState = {
   isTestnet: false,
   address: '',
   ens: '',
-  weirdMainnet: 0,
-  weirdLayer2: 0,
+  weirdEthereum: 0,
+  weirdPolygon: 0,
+  weirdGoerli: 0,
+  weirdMumbai: 0,
   unclaimed: 0,
-  osMainnet: [],
-  osLayer2: [],
-  osTestnet: [],
-  weirdPunksMainnet: [],
-  weirdPunksLayer2: [],
-  weirdPunksTestnet: [],
+  osEthereum: [],
+  osPolygon: [],
+  osRinkeby: [],
+  osMumbai: [],
+  weirdPunksEthereum: [],
+  weirdPunksPolygon: [],
+  weirdPunksMumbai: [],
+  weirdPunksGoerli: [],
+  weirdPunksRinkeby: [],
   isConnecting: false,
   isLoadingBalances: false
 }

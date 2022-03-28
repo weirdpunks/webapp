@@ -18,20 +18,22 @@ interface Mapping {
 
 const OpenSeaMigration = () => {
   const { state } = useApp()
-  const { osMainnet, osLayer2, osTestnet, chainId } = state
+  const { osEthereum, osPolygon, osRinkeby, osMumbai, chainId } = state
 
   const [granted, setGranted] = useState(false)
   const [weirdPunks, setWeirdPunks] = useState<number[]>()
 
   useEffect(() => {
     if (chainId === 80001) {
-      setWeirdPunks(osTestnet)
+      setWeirdPunks(osMumbai)
     } else if (chainId === 137) {
-      setWeirdPunks(osLayer2)
+      setWeirdPunks(osPolygon)
+    } else if (chainId === 4) {
+      setWeirdPunks(osRinkeby)
     } else if (chainId === 1) {
-      setWeirdPunks(osMainnet)
+      setWeirdPunks(osEthereum)
     }
-  }, [chainId, osMainnet, osLayer2, osTestnet])
+  }, [chainId, osEthereum, osPolygon, osRinkeby, osMumbai])
 
   const handlePermission = async () => {
     setGranted(true)
