@@ -1,5 +1,6 @@
 import Address from '@/components/UI/Address'
 import Chain from '@/components/UI/Chain'
+import WeirdTokens from '@/components/UI/WeirdTokens'
 import { useApp, startConnecting, reset } from '@/components/Context'
 import { chains } from '@/utils/chains'
 import {
@@ -22,7 +23,7 @@ import { useEffect, useState } from 'react'
 const Web3 = () => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { state, dispatch } = useApp()
-  const { address, ens, chainId } = state
+  const { address, ens, chainId, isConnecting, isLoadingBalances } = state
 
   const [explorer, setExplorer] = useState('')
 
@@ -39,6 +40,7 @@ const Web3 = () => {
     <>
       {address ? (
         <>
+          <WeirdTokens />
           <Chain />
           <Button onClick={onOpen} mx={2}>
             <Address address={address} ens={ens} avatar='right' size={4} />

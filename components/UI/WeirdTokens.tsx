@@ -1,42 +1,34 @@
 import { useApp } from '@/components/Context'
-import { Box, Stack, Text } from '@chakra-ui/react'
+import { Box, CircularProgress, Stack, Text } from '@chakra-ui/react'
 import Image from 'next/image'
 
 const WeirdTokens = () => {
   const { state } = useApp()
-  const { weirdMainnet, weirdLayer2 } = state
+  const { isLoadingBalances, weirdMainnet, weirdLayer2 } = state
 
-  return (
+  return isLoadingBalances ? (
+    <CircularProgress value={80} />
+  ) : (
     <Box textAlign='center' py={10} px={6}>
       {weirdMainnet > 0 && (
         <Stack direction={'row'} align={'center'} justify={'center'}>
-          <Text fontSize={'6xl'} fontWeight={600} p={2}>
-            {weirdMainnet.toLocaleString()}
-          </Text>
-          <Text fontSize={'xl'} fontWeight={200} p={2}>
-            X
-          </Text>
           <Image
             src='/icons/aWeirdTokenMainnet.png'
             width={34}
             height={34}
             alt='$WEIRD'
           />
+          <Text fontWeight={600}>{weirdMainnet.toLocaleString()}</Text>
         </Stack>
       )}
       <Stack direction={'row'} align={'center'} justify={'center'}>
-        <Text fontSize={'6xl'} fontWeight={600} p={2}>
-          {weirdLayer2.toLocaleString()}
-        </Text>
-        <Text fontSize={'xl'} fontWeight={200} p={2}>
-          X
-        </Text>
         <Image
           src='/icons/aWeirdTokenPolygon.png'
           width={34}
           height={34}
           alt='$WEIRD'
         />
+        <Text fontWeight={600}>{weirdLayer2.toLocaleString()}</Text>
       </Stack>
     </Box>
   )

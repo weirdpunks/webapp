@@ -51,7 +51,9 @@ const Address = ({ address, ens, avatar, size, copyable }: AddressProps) => {
         alignItems: 'center'
       }}>
       {avatar === 'left' && <Blockie address={address} size={size} />}
-      <p>{ens !== '' ? ens : size ? getEllipsisTxt(address, 4) : address}</p>
+      <p>
+        {ens && ens !== '' ? ens : size ? getEllipsisTxt(address, 4) : address}
+      </p>
       {avatar === 'right' && <Blockie address={address} size={size} />}
       {copyable && (isClicked ? <Check /> : <Copy />)}
     </div>
