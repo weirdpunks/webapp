@@ -4,6 +4,7 @@ import {
   setAddress,
   setENS,
   setBalances,
+  setTestnetBalances,
   reset
 } from '@/components/Context'
 import { weird, openSea } from '@/utils/contracts'
@@ -20,7 +21,6 @@ import { useColorMode } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
 import { erc20abi } from '@/artifacts/erc20'
 import { erc1155abi } from '@/artifacts/erc1155'
-import { setTestnetBalances } from '@/app/reducers'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -185,11 +185,17 @@ const Wallet = () => {
       contract: string
       provider: ethers.providers.JsonRpcProvider | undefined
     }) => {
-      const erc20 = new ethers.Contract(contract, erc20abi, provider)
-      const balance = await erc20.balanceOf(`${address}`)
-      if (balance) {
-        return Math.floor(parseFloat(ethers.utils.formatUnits(balance, 18)))
-      } else {
+      try {
+        const erc20 = new ethers.Contract(contract, erc20abi, provider)
+        const balance = await erc20.balanceOf(`${address}`)
+        if (balance) {
+          return Math.floor(parseFloat(ethers.utils.formatUnits(balance, 18)))
+        }
+      } catch (e) {
+        // console.log(
+        //   e,
+        //   `error getting balance of address ${address} on contract ${contract}`
+        // )
         return 0
       }
     },
@@ -209,21 +215,29 @@ const Wallet = () => {
         osid: string
       }[]
     }) => {
-      let addresses = []
-      let ids = []
-      for (let i = 0; i < mapping.length; i++) {
-        addresses.push(address)
-        ids.push(mapping[i].osid)
-      }
-      const erc1155 = new ethers.Contract(contract, erc1155abi, provider)
-      const balance = await erc1155.balanceOfBatch(addresses, ids)
-      let found = []
-      for (let i = 0; i < balance.length; i++) {
-        if (balance[i].toString() === '1') {
-          found.push(mapping[i].id)
+      try {
+        let addresses = []
+        let ids = []
+        for (let i = 0; i < mapping.length; i++) {
+          addresses.push(address)
+          ids.push(mapping[i].osid)
         }
+        const erc1155 = new ethers.Contract(contract, erc1155abi, provider)
+        const balance = await erc1155.balanceOfBatch(addresses, ids)
+        let found = []
+        for (let i = 0; i < balance.length; i++) {
+          if (balance[i].toString() === '1') {
+            found.push(mapping[i].id)
+          }
+        }
+        return found
+      } catch (e) {
+        // console.log(
+        //   e,
+        //   `error getting balanceOfBatch with contract: ${contract}`
+        // )
+        return []
       }
-      return found
     },
     [address]
   )
@@ -250,10 +264,10 @@ const Wallet = () => {
       })
       dispatch(
         setBalances({
-          weirdEthereum: ethereumBalance,
-          weirdPolygon: polygonBalance,
-          osEthereum: ethereumOSWeirdPunks,
-          osPolygon: polygonOSWeirdPunks
+          weirdEthereum: ethereumBalance || 0,
+          weirdPolygon: polygonBalance || 0,
+          osEthereum: ethereumOSWeirdPunks || [],
+          osPolygon: polygonOSWeirdPunks || []
         })
       )
     }
@@ -279,10 +293,10 @@ const Wallet = () => {
       })
       dispatch(
         setTestnetBalances({
-          weirdGoerli: goerliBalance,
-          weirdMumbai: mumbaiBalance,
-          osRinkeby: rinkebyOSWeirdPunks,
-          osMumbai: mumbaiOSWeirdPunks
+          weirdGoerli: goerliBalance || 0,
+          weirdMumbai: mumbaiBalance || 0,
+          osRinkeby: rinkebyOSWeirdPunks || [],
+          osMumbai: mumbaiOSWeirdPunks || []
         })
       )
     }

@@ -1,4 +1,5 @@
 import { useApp } from '@/components/Context'
+import { openSea, weirdPunks as wp } from '@/utils/contracts'
 import {
   Box,
   Button,
@@ -9,7 +10,7 @@ import {
   useCallbackRef
 } from '@chakra-ui/react'
 import { FaCheckCircle } from 'react-icons/fa'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 interface Mapping {
   id: number
@@ -20,24 +21,32 @@ const OpenSeaMigration = () => {
   const { state } = useApp()
   const { osEthereum, osPolygon, osRinkeby, osMumbai, chainId } = state
 
-  const [granted, setGranted] = useState(false)
   const [weirdPunks, setWeirdPunks] = useState<number[]>()
+  const [isApprovedForAll, setIsApprovedForAll] = useState(false)
+  const [openSeaContract, setOpenSeaContract] = useState<string>()
+  const [weirdPunksContract, setWeirdPunksContract] = useState<string>()
+
+  // const checkIfApproved = useCallback(async () => {}, [weirdPunksContract, openSeaContract, signer])
 
   useEffect(() => {
     if (chainId === 80001) {
       setWeirdPunks(osMumbai)
+      setOpenSeaContract(openSea.mumbai)
+      setWeirdPunksContract(wp.mumbai)
     } else if (chainId === 137) {
       setWeirdPunks(osPolygon)
+      setOpenSeaContract(openSea.polygon)
     } else if (chainId === 4) {
       setWeirdPunks(osRinkeby)
+      setOpenSeaContract(openSea.rinkeby)
+      setWeirdPunksContract(wp.rinkeby)
     } else if (chainId === 1) {
       setWeirdPunks(osEthereum)
+      setOpenSeaContract(openSea.mainnet)
     }
   }, [chainId, osEthereum, osPolygon, osRinkeby, osMumbai])
 
-  const handlePermission = async () => {
-    setGranted(true)
-  }
+  const handlePermission = async () => {}
   const handleBurnAndMint = async () => {}
 
   return (
@@ -49,26 +58,30 @@ const OpenSeaMigration = () => {
           </Text>
         </Stack>
       )}
-      <Text>1. Permission to Burn 🔥 OpenSea Assets?</Text>
-      {granted ? (
-        <Stack direction={'row'} align={'center'}>
-          <Flex
-            w={8}
-            h={8}
-            align={'center'}
-            justify={'center'}
-            rounded={'full'}>
-            <Icon as={FaCheckCircle} color='green.500' />
-          </Flex>
-          <Text fontWeight={600}>Permission Granted</Text>
-        </Stack>
-      ) : (
-        <Button onClick={handlePermission}>Authorize</Button>
-      )}
-      <Text>2. Burn 🔥 OpenSea Weird Punk & Mint Migrated Weird Punk</Text>
-      <Button onClick={handleBurnAndMint} disabled={!granted}>
-        Yes please 🙏
-      </Button>
+      <Box m={5}>
+        <Text>Step 1. OpenSea Permission</Text>
+        {isApprovedForAll ? (
+          <Stack direction={'row'} align={'center'}>
+            <Flex
+              w={8}
+              h={8}
+              align={'center'}
+              justify={'center'}
+              rounded={'full'}>
+              <Icon as={FaCheckCircle} color='green.500' />
+            </Flex>
+            <Text fontWeight={600}>Permission Granted</Text>
+          </Stack>
+        ) : (
+          <Button onClick={handlePermission}>Authorize</Button>
+        )}
+      </Box>
+      <Box mx={5} my={10}>
+        <Text>Step 2. Burn & Mint</Text>
+        <Button onClick={handleBurnAndMint} disabled={!isApprovedForAll}>
+          Migrate
+        </Button>
+      </Box>
     </Box>
   )
 }
