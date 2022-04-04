@@ -35,7 +35,7 @@ const OpenSeaMigration = () => {
     if (os && checkApproval) {
       checkApproval()
     }
-  }, [os, checkApproval])
+  }, [os, checkApproval, address, weirdPunksContract])
 
   useEffect(() => {
     const setupOpenSea = async () => {

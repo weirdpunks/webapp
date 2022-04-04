@@ -1,8 +1,8 @@
+import { setChain, useApp } from '@/components/Context'
 import { ETHLogo, PolygonLogo } from '@/components/UI/Logos'
-import { useApp, setChain } from '@/components/Context'
-import { chains, ChainData } from '@/utils/chains'
-import { Button, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
+import { ChainData, chains } from '@/utils/chains'
 import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Button, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 
 const displayTestnets = false
@@ -15,7 +15,7 @@ const ChainComponent = () => {
 
   useEffect(() => {
     if (chainId) {
-      const newChain = chains.find((i) => i.id === chainId)
+      const newChain = chains.find(i => i.id === chainId)
       setSelectedChain(newChain)
     }
   }, [chainId])
@@ -33,12 +33,13 @@ const ChainComponent = () => {
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: id }]
           })
-          const newChain = chains.find((i) => i.key === id)
+          const newChain = chains.find(i => i.key === id)
           if (newChain) {
             dispatch(
               setChain({
                 chainId: newChain.id,
-                isTestnet: Boolean(newChain.isTestnet)
+                isTestnet: Boolean(newChain.isTestnet),
+                isLayer2: Boolean(newChain.id === 137 || newChain.id === 80001)
               })
             )
           }
@@ -47,7 +48,7 @@ const ChainComponent = () => {
             const values: any[] = Object.values(e)
             if (values.includes(4902)) {
               try {
-                const newChain = chains.find((i) => i.key === id)
+                const newChain = chains.find(i => i.key === id)
                 if (newChain?.parameter) {
                   await window?.ethereum?.request({
                     method: 'wallet_addEthereumChain',
@@ -84,7 +85,7 @@ const ChainComponent = () => {
           <MenuList>
             <>
               {chains.map(
-                (item) =>
+                item =>
                   (!item.isTestnet || (item.isTestnet && displayTestnets)) && (
                     <MenuItem
                       key={item.hex}
