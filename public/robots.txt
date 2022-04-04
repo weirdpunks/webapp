@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://weirdpunkscollection.com
+
+# Sitemaps
+Sitemap: https://weirdpunkscollection.com/sitemap.xml
