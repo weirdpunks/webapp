@@ -1,26 +1,25 @@
-import {
-  useApp,
-  setConnection,
-  setAddress,
-  setENS,
-  setBalances,
-  setTestnetBalances,
-  reset
-} from '@/components/Context'
-import { weird, openSea } from '@/utils/contracts'
-import { providerOptions } from '@/utils/wallet'
-import {
-  mumbai as mumbaiMapping,
-  rinkeby as rinkebyMapping,
-  polygon as polygonMapping,
-  ethereum as ethereumMapping
-} from '@/utils/mappings'
-import { ethers } from 'ethers'
-import Web3Modal from 'web3modal'
-import { useColorMode } from '@chakra-ui/react'
-import { useCallback, useEffect, useState } from 'react'
-import { erc20abi } from '@/artifacts/erc20'
 import { erc1155abi } from '@/artifacts/erc1155'
+import { erc20abi } from '@/artifacts/erc20'
+import {
+  reset,
+  setAddress,
+  setBalances,
+  setConnection,
+  setENS,
+  useApp
+} from '@/components/Context'
+import { openSea, weird } from '@/utils/contracts'
+import {
+  ethereum as ethereumMapping,
+  mumbai as mumbaiMapping,
+  polygon as polygonMapping,
+  rinkeby as rinkebyMapping
+} from '@/utils/mappings'
+import { providerOptions } from '@/utils/wallet'
+import { useColorMode } from '@chakra-ui/react'
+import { ethers } from 'ethers'
+import { useCallback, useEffect, useState } from 'react'
+import Web3Modal from 'web3modal'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -32,25 +31,21 @@ const Wallet = () => {
     state
 
   const [web3Modal, setWeb3Modal] = useState<Web3Modal>()
-  const [ethereumProvider, setEthereumProvider] =
+  const [mainnetProvider, setMainnetProvider] =
     useState<ethers.providers.JsonRpcProvider>()
-  const [polygonProvider, setPolygonProvider] =
-    useState<ethers.providers.JsonRpcProvider>()
-  const [mumbaiProvider, setMumbaiProvider] =
-    useState<ethers.providers.JsonRpcProvider>()
-  const [rinkebyProvider, setRinkebyProvider] =
+  const [layer2Provider, setLayer2Provider] =
     useState<ethers.providers.JsonRpcProvider>()
   const [goerliProvider, setGoerliProvider] =
     useState<ethers.providers.JsonRpcProvider>()
 
   useEffect(() => {
     const setProviders = () => {
-      setEthereumProvider(
+      setMainnetProvider(
         new ethers.providers.JsonRpcProvider(
           `https://mainnet.infura.io/v3/${infuraId}`
         )
       )
-      setPolygonProvider(
+      setLayer2Provider(
         new ethers.providers.JsonRpcProvider(
           `https://polygon-mainnet.infura.io/v3/${infuraId}`
         )
@@ -58,12 +53,12 @@ const Wallet = () => {
     }
 
     const setTestnetProviders = () => {
-      setMumbaiProvider(
+      setLayer2Provider(
         new ethers.providers.JsonRpcProvider(
           `https://polygon-mumbai.infura.io/v3/${infuraId}`
         )
       )
-      setRinkebyProvider(
+      setMainnetProvider(
         new ethers.providers.JsonRpcProvider(
           `https://rinkeby.infura.io/v3/${infuraId}`
         )
@@ -86,15 +81,15 @@ const Wallet = () => {
 
   useEffect(() => {
     const checkENS = async () => {
-      const ensName = await ethereumProvider?.lookupAddress(address)
+      const ensName = await mainnetProvider?.lookupAddress(address)
       if (ensName && ensName !== '') {
         dispatch(setENS(ensName))
       }
     }
-    if (ethereumProvider && address !== '' && ens === '') {
+    if (!isTestnet && mainnetProvider && address !== '' && ens === '') {
       checkENS()
     }
-  }, [address, ens, ethereumProvider, dispatch])
+  }, [isTestnet, address, ens, mainnetProvider, dispatch])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -114,14 +109,18 @@ const Wallet = () => {
     const signer = provider.getSigner()
     const address = await signer.getAddress()
     const network = await provider.getNetwork()
-    const testnet = Boolean(network.chainId !== 1 && network.chainId !== 137)
+    const isTestnet = Boolean(network.chainId !== 1 && network.chainId !== 137)
+    const isLayer2 = Boolean(
+      network.chainId === 137 || network.chainId === 80001
+    )
     dispatch(
       setConnection({
         instance,
         provider,
         signer,
         chainId: network.chainId,
-        isTestnet: testnet,
+        isTestnet,
+        isLayer2,
         address
       })
     )
@@ -244,78 +243,52 @@ const Wallet = () => {
 
   useEffect(() => {
     const getBalances = async () => {
-      const ethereumBalance = await getERC20Balance({
-        contract: weird.mainnet,
-        provider: ethereumProvider
+      const mainnetBalance = await getERC20Balance({
+        contract: isTestnet ? weird.goerli : weird.mainnet,
+        provider: isTestnet ? goerliProvider : mainnetProvider
       })
-      const polygonBalance = await getERC20Balance({
-        contract: weird.polygon,
-        provider: polygonProvider
+      const layer2Balance = await getERC20Balance({
+        contract: isTestnet ? weird.mumbai : weird.polygon,
+        provider: layer2Provider
       })
-      const ethereumOSWeirdPunks = await getERC1155BalanceOfBatch({
-        contract: openSea.mainnet,
-        provider: ethereumProvider,
-        mapping: ethereumMapping
+      const mainnetOSWeirdPunks = await getERC1155BalanceOfBatch({
+        contract: isTestnet ? openSea.rinkeby : openSea.mainnet,
+        provider: mainnetProvider,
+        mapping: isTestnet ? rinkebyMapping : ethereumMapping
       })
-      const polygonOSWeirdPunks = await getERC1155BalanceOfBatch({
-        contract: openSea.polygon,
-        provider: polygonProvider,
-        mapping: polygonMapping
+      const layer2OSWeirdPunks = await getERC1155BalanceOfBatch({
+        contract: isTestnet ? openSea.mumbai : openSea.polygon,
+        provider: layer2Provider,
+        mapping: isTestnet ? mumbaiMapping : polygonMapping
       })
       dispatch(
         setBalances({
-          weirdEthereum: ethereumBalance || 0,
-          weirdPolygon: polygonBalance || 0,
-          osEthereum: ethereumOSWeirdPunks || [],
-          osPolygon: polygonOSWeirdPunks || []
+          weirdMainnet: mainnetBalance || 0,
+          weirdLayer2: layer2Balance || 0,
+          osMainnet: mainnetOSWeirdPunks || [],
+          osLayer2: layer2OSWeirdPunks || []
         })
       )
     }
 
-    const getTestBalances = async () => {
-      const goerliBalance = await getERC20Balance({
-        contract: weird.goerli,
-        provider: goerliProvider
-      })
-      const mumbaiBalance = await getERC20Balance({
-        contract: weird.mumbai,
-        provider: mumbaiProvider
-      })
-      const mumbaiOSWeirdPunks = await getERC1155BalanceOfBatch({
-        contract: openSea.mumbai,
-        provider: mumbaiProvider,
-        mapping: mumbaiMapping
-      })
-      const rinkebyOSWeirdPunks = await getERC1155BalanceOfBatch({
-        contract: openSea.rinkeby,
-        provider: rinkebyProvider,
-        mapping: rinkebyMapping
-      })
-      dispatch(
-        setTestnetBalances({
-          weirdGoerli: goerliBalance || 0,
-          weirdMumbai: mumbaiBalance || 0,
-          osRinkeby: rinkebyOSWeirdPunks || [],
-          osMumbai: mumbaiOSWeirdPunks || []
-        })
-      )
-    }
-
-    if (!isTestnet && address !== '' && ethereumProvider && polygonProvider) {
+    if (
+      (address !== '' &&
+        isTestnet &&
+        mainnetProvider &&
+        layer2Provider &&
+        goerliProvider) ||
+      (!isTestnet && mainnetProvider && layer2Provider)
+    ) {
       getBalances()
-    } else if (isTestnet && address !== '' && provider) {
-      getTestBalances()
     }
   }, [
     isTestnet,
     address,
     provider,
     dispatch,
-    ethereumProvider,
-    polygonProvider,
+    mainnetProvider,
+    layer2Provider,
     goerliProvider,
-    rinkebyProvider,
-    mumbaiProvider,
     getERC20Balance,
     getERC1155BalanceOfBatch
   ])

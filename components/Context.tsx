@@ -1,28 +1,26 @@
-import { AppState, initialAppState } from '@/app/state'
 import {
   ActionType,
-  StartConnecting,
-  SetConnection,
-  SetChain,
+  AppActions,
   SetAddress,
-  SetENS,
   SetBalances,
-  SetTestnetBalances,
-  AppActions
+  SetChain,
+  SetConnection,
+  SetENS,
+  StartConnecting
 } from '@/app/actions'
+import { AppContext } from '@/app/context'
 import {
   appReducer,
-  startConnecting,
-  setConnection,
-  setChain,
+  reset,
   setAddress,
-  setENS,
   setBalances,
-  setTestnetBalances,
-  reset
+  setChain,
+  setConnection,
+  setENS,
+  startConnecting
 } from '@/app/reducers'
-import { AppContext } from '@/app/context'
-import { useContext, useMemo, useReducer, ReactNode } from 'react'
+import { AppState, initialAppState } from '@/app/state'
+import { ReactNode, useContext, useMemo, useReducer } from 'react'
 
 export type {
   AppState,
@@ -32,10 +30,8 @@ export type {
   SetAddress,
   SetENS,
   SetBalances,
-  SetTestnetBalances,
   AppActions
 }
-
 export {
   AppContext,
   initialAppState,
@@ -47,7 +43,6 @@ export {
   setAddress,
   setENS,
   setBalances,
-  setTestnetBalances,
   reset
 }
 

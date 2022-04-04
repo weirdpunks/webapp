@@ -23,6 +23,7 @@ export interface SetConnection {
     signer: ethers.providers.JsonRpcSigner
     chainId: number
     isTestnet: boolean
+    isLayer2: boolean
     address: string
   }
 }
@@ -32,6 +33,7 @@ export interface SetChain {
   payload: {
     chainId: number
     isTestnet: boolean
+    isLayer2: boolean
   }
 }
 
@@ -48,20 +50,10 @@ export interface SetENS {
 export interface SetBalances {
   type: ActionType.SetBalances
   payload: {
-    weirdEthereum: number
-    weirdPolygon: number
-    osEthereum: number[]
-    osPolygon: number[]
-  }
-}
-
-export interface SetTestnetBalances {
-  type: ActionType.SetTestnetBalances
-  payload: {
-    weirdGoerli: number
-    weirdMumbai: number
-    osRinkeby: number[]
-    osMumbai: number[]
+    weirdMainnet: number
+    weirdLayer2: number
+    osMainnet: number[]
+    osLayer2: number[]
   }
 }
 
@@ -76,5 +68,4 @@ export type AppActions =
   | SetAddress
   | SetENS
   | SetBalances
-  | SetTestnetBalances
   | Reset

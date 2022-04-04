@@ -6,22 +6,16 @@ export interface AppState {
   signer?: ethers.providers.JsonRpcSigner
   chainId?: number
   isTestnet: boolean
+  isLayer2: boolean
   address: string
   ens: string
-  weirdEthereum: number
-  weirdPolygon: number
-  weirdGoerli: number
-  weirdMumbai: number
+  weirdMainnet: number
+  weirdLayer2: number
   unclaimed: number
-  osEthereum: number[]
-  osPolygon: number[]
-  osRinkeby: number[]
-  osMumbai: number[]
-  weirdPunksEthereum: number[]
-  weirdPunksPolygon: number[]
-  weirdPunksMumbai: number[]
-  weirdPunksGoerli: number[]
-  weirdPunksRinkeby: number[]
+  osMainnet: number[]
+  osLayer2: number[]
+  weirdPunksMainnet: number[]
+  weirdPunksLayer2: number[]
   isConnecting: boolean
   isLoadingBalances: boolean
 }
@@ -29,22 +23,16 @@ export interface AppState {
 export const initialAppState: AppState = {
   chainId: 0,
   isTestnet: false,
+  isLayer2: false,
   address: '',
   ens: '',
-  weirdEthereum: 0,
-  weirdPolygon: 0,
-  weirdGoerli: 0,
-  weirdMumbai: 0,
+  weirdMainnet: 0,
+  weirdLayer2: 0,
   unclaimed: 0,
-  osEthereum: [],
-  osPolygon: [],
-  osRinkeby: [],
-  osMumbai: [],
-  weirdPunksEthereum: [],
-  weirdPunksPolygon: [],
-  weirdPunksMumbai: [],
-  weirdPunksGoerli: [],
-  weirdPunksRinkeby: [],
+  osMainnet: [],
+  osLayer2: [],
+  weirdPunksMainnet: [],
+  weirdPunksLayer2: [],
   isConnecting: false,
   isLoadingBalances: false
 }

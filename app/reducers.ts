@@ -1,16 +1,15 @@
 import {
-  AppActions,
   ActionType,
-  StartConnecting,
-  SetConnection,
-  SetChain,
+  AppActions,
+  Reset,
   SetAddress,
-  SetENS,
   SetBalances,
-  SetTestnetBalances,
-  Reset
+  SetChain,
+  SetConnection,
+  SetENS,
+  StartConnecting
 } from '@/app/actions'
-import { initialAppState, AppState } from '@/app/state'
+import { AppState, initialAppState } from '@/app/state'
 import { ethers } from 'ethers'
 
 export const appReducer = (state: AppState, action: AppActions): AppState => {
@@ -25,6 +24,7 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         signer: action.payload.signer,
         chainId: action.payload.chainId,
         isTestnet: action.payload.isTestnet,
+        isLayer2: action.payload.isLayer2,
         address: action.payload.address,
         isConnecting: false
       }
@@ -32,27 +32,21 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
       return {
         ...state,
         chainId: action.payload.chainId,
-        isTestnet: action.payload.isTestnet
+        isTestnet: action.payload.isTestnet,
+        isLayer2: action.payload.isLayer2
       }
     case ActionType.SetAddress:
       return {
         ...state,
         address: action.payload,
         ens: '',
-        weirdEthereum: 0,
-        weirdPolygon: 0,
-        weirdGoerli: 0,
-        weirdMumbai: 0,
+        weirdMainnet: 0,
+        weirdLayer2: 0,
         unclaimed: 0,
-        osEthereum: [],
-        osPolygon: [],
-        osRinkeby: [],
-        osMumbai: [],
-        weirdPunksEthereum: [],
-        weirdPunksPolygon: [],
-        weirdPunksMumbai: [],
-        weirdPunksGoerli: [],
-        weirdPunksRinkeby: [],
+        osMainnet: [],
+        osLayer2: [],
+        weirdPunksMainnet: [],
+        weirdPunksLayer2: [],
         isLoadingBalances: true
       }
     case ActionType.SetENS:
@@ -63,27 +57,10 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
     case ActionType.SetBalances:
       return {
         ...state,
-        weirdEthereum: action.payload.weirdEthereum,
-        weirdPolygon: action.payload.weirdPolygon,
-        weirdGoerli: 0,
-        weirdMumbai: 0,
-        osEthereum: action.payload.osEthereum,
-        osPolygon: action.payload.osPolygon,
-        osRinkeby: [],
-        osMumbai: [],
-        isLoadingBalances: false
-      }
-    case ActionType.SetTestnetBalances:
-      return {
-        ...state,
-        weirdEthereum: 0,
-        weirdPolygon: 0,
-        weirdGoerli: action.payload.weirdGoerli,
-        weirdMumbai: action.payload.weirdMumbai,
-        osEthereum: [],
-        osPolygon: [],
-        osRinkeby: action.payload.osRinkeby,
-        osMumbai: action.payload.osMumbai,
+        weirdMainnet: action.payload.weirdMainnet,
+        weirdLayer2: action.payload.weirdLayer2,
+        osMainnet: action.payload.osMainnet,
+        osLayer2: action.payload.osLayer2,
         isLoadingBalances: false
       }
     case ActionType.Reset:
@@ -103,6 +80,7 @@ export const setConnection = ({
   signer,
   chainId,
   isTestnet,
+  isLayer2,
   address
 }: {
   instance: ethers.providers.Web3Provider
@@ -110,6 +88,7 @@ export const setConnection = ({
   signer: ethers.providers.JsonRpcSigner
   chainId: number
   isTestnet: boolean
+  isLayer2: boolean
   address: string
 }): SetConnection => ({
   type: ActionType.SetConnection,
@@ -119,19 +98,22 @@ export const setConnection = ({
     signer,
     chainId,
     isTestnet,
+    isLayer2,
     address
   }
 })
 
 export const setChain = ({
   chainId,
-  isTestnet
+  isTestnet,
+  isLayer2
 }: {
   chainId: number
   isTestnet: boolean
+  isLayer2: boolean
 }): SetChain => ({
   type: ActionType.SetChain,
-  payload: { chainId, isTestnet }
+  payload: { chainId, isTestnet, isLayer2 }
 })
 
 export const setAddress = (address: string): SetAddress => ({
@@ -145,42 +127,22 @@ export const setENS = (ens: string): SetENS => ({
 })
 
 export const setBalances = ({
-  weirdEthereum,
-  weirdPolygon,
-  osEthereum,
-  osPolygon
+  weirdMainnet,
+  weirdLayer2,
+  osMainnet,
+  osLayer2
 }: {
-  weirdEthereum: number
-  weirdPolygon: number
-  osEthereum: number[]
-  osPolygon: number[]
+  weirdMainnet: number
+  weirdLayer2: number
+  osMainnet: number[]
+  osLayer2: number[]
 }): SetBalances => ({
   type: ActionType.SetBalances,
   payload: {
-    weirdEthereum,
-    weirdPolygon,
-    osEthereum,
-    osPolygon
-  }
-})
-
-export const setTestnetBalances = ({
-  weirdGoerli,
-  weirdMumbai,
-  osRinkeby,
-  osMumbai
-}: {
-  weirdGoerli: number
-  weirdMumbai: number
-  osRinkeby: number[]
-  osMumbai: number[]
-}): SetTestnetBalances => ({
-  type: ActionType.SetTestnetBalances,
-  payload: {
-    weirdGoerli,
-    weirdMumbai,
-    osRinkeby,
-    osMumbai
+    weirdMainnet,
+    weirdLayer2,
+    osMainnet,
+    osLayer2
   }
 })
 

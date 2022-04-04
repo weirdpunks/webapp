@@ -1,9 +1,9 @@
-import Wallet from '@/components/Wallet'
 import Bar from '@/components/UI/Bar'
 import Footer from '@/components/UI/Footer'
-import { ReactNode } from 'react'
+import Wallet from '@/components/Wallet'
 import { Box, Container } from '@chakra-ui/react'
 import Head from 'next/head'
+import { ReactNode } from 'react'
 
 const UI = ({ children }: { children: ReactNode }) => {
   return (
@@ -18,7 +18,9 @@ const UI = ({ children }: { children: ReactNode }) => {
       </Head>
       <Wallet />
       <Bar />
-      <Container maxW='4xl'>{children}</Container>
+      <Container maxW='4xl' minHeight={'60vh'}>
+        {children}
+      </Container>
       <Footer />
     </Box>
   )
