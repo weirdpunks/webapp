@@ -1,7 +1,17 @@
 import { erc1155abi } from '@/artifacts/erc1155'
+import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
+import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { useApp } from '@/components/Context'
 import { openSea, weirdPunks as wp } from '@/utils/contracts'
-import { Box, Button, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Flex,
+  Icon,
+  Stack,
+  Text
+} from '@chakra-ui/react'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 import { FaCheckCircle } from 'react-icons/fa'
@@ -13,7 +23,7 @@ interface Mapping {
 
 const OpenSeaMigration = () => {
   const { state } = useApp()
-  const { osMainnet, osLayer2, chainId, signer, address } = state
+  const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
 
   const [weirdPunks, setWeirdPunks] = useState<number[]>()
   const [isApprovedForAll, setIsApprovedForAll] = useState(false)
@@ -21,8 +31,8 @@ const OpenSeaMigration = () => {
   const [weirdPunksContract, setWeirdPunksContract] = useState('')
   const [os, setOS] = useState<ethers.Contract>()
   const [checkApproval, setCheckApproval] = useState(true)
-
-  // const checkIfApproved = useCallback(async () => {}, [weirdPunksContract, openSeaContract, signer])
+  const [migrating, setMigrating] = useState(false)
+  const [changingApproval, setChangingApproval] = useState(false)
 
   useEffect(() => {
     const checkApproval = async () => {
@@ -31,6 +41,7 @@ const OpenSeaMigration = () => {
         setIsApprovedForAll(true)
       }
       setCheckApproval(false)
+      setChangingApproval(false)
     }
     if (os && checkApproval) {
       checkApproval()
@@ -66,51 +77,75 @@ const OpenSeaMigration = () => {
   }, [chainId, osMainnet, osLayer2])
 
   const handlePermission = async () => {
+    setChangingApproval(true)
     const transaction = await os?.setApprovalForAll(weirdPunksContract, true)
     await transaction.wait()
     setCheckApproval(true)
   }
 
-  const handleBurnAndMint = async () => {}
+  const handleBurnAndMint = async () => {
+    setMigrating(true)
+    const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
+    const wp = new ethers.Contract(weirdPunksContract, abi, signer)
+    const transaction = await wp.burnAndMint(address, weirdPunks)
+    await transaction.wait()
+    setMigrating(false)
+  }
 
   return (
-    <Box>
+    <>
       {weirdPunks && weirdPunks.length > 0 && (
-        <Stack direction={'row'} align={'center'}>
-          <Text fontSize={'xl'} fontWeight={200} p={2}>
-            {`Unmigrated Weird Punks: ${weirdPunks.join(', ')}`}
-          </Text>
-        </Stack>
-      )}
-      <Box m={5}>
-        <Text>Step 1. OpenSea Permission</Text>
-        {isApprovedForAll ? (
+        <Box>
           <Stack direction={'row'} align={'center'}>
-            <Flex
-              w={8}
-              h={8}
-              align={'center'}
-              justify={'center'}
-              rounded={'full'}>
-              <Icon as={FaCheckCircle} color='green.500' />
-            </Flex>
-            <Text fontWeight={600}>Permission Granted</Text>
+            <Text fontSize={'xl'} fontWeight={200} p={2}>
+              {`Unmigrated Weird Punks: ${weirdPunks.join(', ')}`}
+            </Text>
           </Stack>
-        ) : (
-          <Button
-            onClick={handlePermission}
-            disabled={Boolean(!os || weirdPunksContract === '')}>
-            Authorize
-          </Button>
-        )}
-      </Box>
-      <Box mx={5} my={10}>
-        <Text>Step 2. Burn & Mint</Text>
-        <Button onClick={handleBurnAndMint} disabled={!isApprovedForAll}>
-          Migrate
-        </Button>
-      </Box>
-    </Box>
+          <Box m={5}>
+            <Text>Step 1. OpenSea Permission</Text>
+            {isApprovedForAll ? (
+              <Stack direction={'row'} align={'center'}>
+                <Flex
+                  w={8}
+                  h={8}
+                  align={'center'}
+                  justify={'center'}
+                  rounded={'full'}>
+                  <Icon as={FaCheckCircle} color='green.500' />
+                </Flex>
+                <Text fontWeight={600}>Permission Granted</Text>
+              </Stack>
+            ) : (
+              <Button
+                onClick={handlePermission}
+                disabled={Boolean(!os || weirdPunksContract === '')}>
+                Authorize{' '}
+                {changingApproval && (
+                  <CircularProgress
+                    size={'12px'}
+                    isIndeterminate
+                    color='green.300'
+                  />
+                )}
+              </Button>
+            )}
+          </Box>
+          <Box mx={5} my={10}>
+            <Text>Step 2. Burn & Mint</Text>
+            <Button onClick={handleBurnAndMint} disabled={!isApprovedForAll}>
+              Migrate{' '}
+              {migrating && (
+                <CircularProgress
+                  size={'12px'}
+                  isIndeterminate
+                  color='green.300'
+                />
+              )}
+            </Button>
+          </Box>
+        </Box>
+      )}
+    </>
   )
 }
 
