@@ -8,9 +8,9 @@ export const weird = {
 export const weirdPunks = {
   mainnet: '',
   polygon: '',
-  mumbai: '0x30DE7AC05a0bC2417313b4Bc6d0cfA874084bE0E',
+  mumbai: '0x0ed13579c74eff623f228ec5d1572c5527ebd328',
   goerli: '',
-  rinkeby: '0xF42A270A94002951e9Ad4afE2c81042a7D40eB33'
+  rinkeby: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C'
 }
 
 export const openSea = {

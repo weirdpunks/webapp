@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Flex,
   Icon,
+  Link,
   Stack,
   Text
 } from '@chakra-ui/react'
@@ -25,6 +26,7 @@ const OpenSeaMigration = () => {
   const { state } = useApp()
   const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
 
+  const [loading, setLoading] = useState(true)
   const [weirdPunks, setWeirdPunks] = useState<number[]>()
   const [isApprovedForAll, setIsApprovedForAll] = useState(false)
   const [openSeaContract, setOpenSeaContract] = useState('')
@@ -33,6 +35,9 @@ const OpenSeaMigration = () => {
   const [checkApproval, setCheckApproval] = useState(true)
   const [migrating, setMigrating] = useState(false)
   const [changingApproval, setChangingApproval] = useState(false)
+  const [blockExplorer, setBlockExplorer] = useState('')
+  const [permissionTx, setPermissionTx] = useState('')
+  const [migrateTx, setMigrateTx] = useState('')
 
   useEffect(() => {
     const checkApproval = async () => {
@@ -63,22 +68,28 @@ const OpenSeaMigration = () => {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.mumbai)
       setWeirdPunksContract(wp.mumbai)
+      setBlockExplorer('https://mumbai.polygonscan.com/tx/')
     } else if (chainId === 137) {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.polygon)
+      setBlockExplorer('https://polygonscan.com/tx/')
     } else if (chainId === 4) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.rinkeby)
       setWeirdPunksContract(wp.rinkeby)
+      setBlockExplorer('https://rinkeby.etherscan.io/tx/')
     } else if (chainId === 1) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.mainnet)
+      setBlockExplorer('https://etherscan.io/tx/')
     }
+    setLoading(false)
   }, [chainId, osMainnet, osLayer2])
 
   const handlePermission = async () => {
     setChangingApproval(true)
     const transaction = await os?.setApprovalForAll(weirdPunksContract, true)
+    setPermissionTx(transaction.hash)
     await transaction.wait()
     setCheckApproval(true)
   }
@@ -88,22 +99,47 @@ const OpenSeaMigration = () => {
     const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
     const wp = new ethers.Contract(weirdPunksContract, abi, signer)
     const transaction = await wp.burnAndMint(address, weirdPunks)
+    setMigrateTx(transaction.hash)
     await transaction.wait()
     setMigrating(false)
   }
 
-  return (
-    <>
-      {weirdPunks && weirdPunks.length > 0 && (
-        <Box>
-          <Stack direction={'row'} align={'center'}>
-            <Text fontSize={'xl'} fontWeight={200} p={2}>
-              {`Unmigrated Weird Punks: ${weirdPunks.join(', ')}`}
-            </Text>
-          </Stack>
-          <Box m={5}>
-            <Text>Step 1. OpenSea Permission</Text>
-            {isApprovedForAll ? (
+  return loading ? (
+    <CircularProgress size={'32px'} isIndeterminate color='green.300' />
+  ) : (
+    <Box>
+      <Stack direction={'row'} align={'center'}>
+        <Text fontSize={'xl'} fontWeight={200} p={2}>
+          {weirdPunks && weirdPunks.length > 0
+            ? `Open Sea Weird Punk IDs: ${weirdPunks.join(', ')}`
+            : 'No Open Sea Weird Punks found to migrate...'}
+        </Text>
+      </Stack>
+      <Box m={5}>
+        <Text>Step 1. OpenSea Permission</Text>
+        {checkApproval ? (
+          <CircularProgress size={'32px'} isIndeterminate color='green.300' />
+        ) : (
+          <>
+            {!isApprovedForAll ? (
+              <>
+                {changingApproval ? (
+                  <>
+                    <CircularProgress
+                      size={'12px'}
+                      isIndeterminate
+                      color='green.300'
+                    />
+                  </>
+                ) : (
+                  <Button
+                    onClick={handlePermission}
+                    disabled={Boolean(!os || weirdPunksContract === '')}>
+                    Authorize{' '}
+                  </Button>
+                )}
+              </>
+            ) : (
               <Stack direction={'row'} align={'center'}>
                 <Flex
                   w={8}
@@ -113,39 +149,35 @@ const OpenSeaMigration = () => {
                   rounded={'full'}>
                   <Icon as={FaCheckCircle} color='green.500' />
                 </Flex>
-                <Text fontWeight={600}>Permission Granted</Text>
+                <Text fontWeight={600}>Approved</Text>
               </Stack>
-            ) : (
-              <Button
-                onClick={handlePermission}
-                disabled={Boolean(!os || weirdPunksContract === '')}>
-                Authorize{' '}
-                {changingApproval && (
-                  <CircularProgress
-                    size={'12px'}
-                    isIndeterminate
-                    color='green.300'
-                  />
-                )}
-              </Button>
             )}
-          </Box>
-          <Box mx={5} my={10}>
-            <Text>Step 2. Burn & Mint</Text>
-            <Button onClick={handleBurnAndMint} disabled={!isApprovedForAll}>
-              Migrate{' '}
-              {migrating && (
-                <CircularProgress
-                  size={'12px'}
-                  isIndeterminate
-                  color='green.300'
-                />
-              )}
-            </Button>
-          </Box>
-        </Box>
-      )}
-    </>
+          </>
+        )}
+        {permissionTx !== '' && (
+          <Link href={`${blockExplorer}${permissionTx}`} isExternal={true}>
+            View transaction
+          </Link>
+        )}
+      </Box>
+      <Box mx={5} my={10}>
+        <Text>Step 2. Burn & Mint</Text>
+        {migrating ? (
+          <>
+            <CircularProgress size={'12px'} isIndeterminate color='green.300' />
+          </>
+        ) : (
+          <Button onClick={handleBurnAndMint} disabled={!isApprovedForAll}>
+            Migrate from OpenSea
+          </Button>
+        )}
+        {migrateTx !== '' && (
+          <Link href={`${blockExplorer}${migrateTx}`} isExternal={true}>
+            View transaction
+          </Link>
+        )}
+      </Box>
+    </Box>
   )
 }
 
