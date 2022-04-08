@@ -1,8 +1,9 @@
 import { erc1155abi } from '@/artifacts/erc1155'
 import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
 import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
-import { useApp } from '@/components/Context'
+import { updateOpenSeaBalance, useApp } from '@/components/Context'
 import { openSea, weirdPunks as wp } from '@/utils/contracts'
+import { ethereum, mumbai, polygon, rinkeby } from '@/utils/mappings'
 import {
   Box,
   Button,
@@ -23,7 +24,7 @@ interface Mapping {
 }
 
 const OpenSeaMigration = () => {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
   const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
 
   const [loading, setLoading] = useState(true)
@@ -31,6 +32,7 @@ const OpenSeaMigration = () => {
   const [isApprovedForAll, setIsApprovedForAll] = useState(false)
   const [openSeaContract, setOpenSeaContract] = useState('')
   const [weirdPunksContract, setWeirdPunksContract] = useState('')
+  const [mapping, setMapping] = useState<Mapping[]>()
   const [os, setOS] = useState<ethers.Contract>()
   const [checkApproval, setCheckApproval] = useState(true)
   const [migrating, setMigrating] = useState(false)
@@ -40,7 +42,7 @@ const OpenSeaMigration = () => {
   const [migrateTx, setMigrateTx] = useState('')
 
   useEffect(() => {
-    const checkApproval = async () => {
+    const checkOSApproval = async () => {
       const isApproved = await os?.isApprovedForAll(address, weirdPunksContract)
       if (isApproved) {
         setIsApprovedForAll(true)
@@ -49,7 +51,7 @@ const OpenSeaMigration = () => {
       setChangingApproval(false)
     }
     if (os && checkApproval) {
-      checkApproval()
+      checkOSApproval()
     }
   }, [os, checkApproval, address, weirdPunksContract])
 
@@ -69,22 +71,42 @@ const OpenSeaMigration = () => {
       setOpenSeaContract(openSea.mumbai)
       setWeirdPunksContract(wp.mumbai)
       setBlockExplorer('https://mumbai.polygonscan.com/tx/')
+      setMapping(mumbai)
     } else if (chainId === 137) {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.polygon)
       setBlockExplorer('https://polygonscan.com/tx/')
+      setMapping(polygon)
     } else if (chainId === 4) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.rinkeby)
       setWeirdPunksContract(wp.rinkeby)
       setBlockExplorer('https://rinkeby.etherscan.io/tx/')
+      setMapping(rinkeby)
     } else if (chainId === 1) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.mainnet)
       setBlockExplorer('https://etherscan.io/tx/')
+      setMapping(ethereum)
     }
     setLoading(false)
   }, [chainId, osMainnet, osLayer2])
+
+  const updateOSBalance = async () => {
+    if (mapping && mapping.length > 0) {
+      const addresses = new Array(mapping.length).fill(address)
+      const ids = mapping?.map(i => i.osid)
+      const balance = await os?.balanceOfBatch(addresses, ids)
+      let found = []
+      for (let i = 0; i < balance.length; i++) {
+        if (balance[i].toString() === '1') {
+          found.push(mapping[i].id)
+        }
+      }
+      dispatch(updateOpenSeaBalance(found))
+      setWeirdPunks(found)
+    }
+  }
 
   const handlePermission = async () => {
     setChangingApproval(true)

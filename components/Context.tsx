@@ -1,12 +1,14 @@
 import {
   ActionType,
   AppActions,
+  Reset,
   SetAddress,
   SetBalances,
   SetChain,
   SetConnection,
   SetENS,
-  StartConnecting
+  StartConnecting,
+  UpdateOpenSeaBalance
 } from '@/app/actions'
 import { AppContext } from '@/app/context'
 import {
@@ -17,7 +19,8 @@ import {
   setChain,
   setConnection,
   setENS,
-  startConnecting
+  startConnecting,
+  updateOpenSeaBalance
 } from '@/app/reducers'
 import { AppState, initialAppState } from '@/app/state'
 import { ReactNode, useContext, useMemo, useReducer } from 'react'
@@ -30,7 +33,9 @@ export type {
   SetAddress,
   SetENS,
   SetBalances,
-  AppActions
+  AppActions,
+  Reset,
+  UpdateOpenSeaBalance
 }
 export {
   AppContext,
@@ -43,6 +48,7 @@ export {
   setAddress,
   setENS,
   setBalances,
+  updateOpenSeaBalance,
   reset
 }
 

@@ -7,7 +7,8 @@ import {
   SetChain,
   SetConnection,
   SetENS,
-  StartConnecting
+  StartConnecting,
+  UpdateOpenSeaBalance
 } from '@/app/actions'
 import { AppState, initialAppState } from '@/app/state'
 import { ethers } from 'ethers'
@@ -62,6 +63,12 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         osMainnet: action.payload.osMainnet,
         osLayer2: action.payload.osLayer2,
         isLoadingBalances: false
+      }
+    case ActionType.UpdateOpenSeaBalance:
+      return {
+        ...state,
+        osMainnet: state.isLayer2 ? state.osMainnet : action.payload,
+        osLayer2: state.isLayer2 ? action.payload : state.osLayer2
       }
     case ActionType.Reset:
       return initialAppState
@@ -144,6 +151,11 @@ export const setBalances = ({
     osMainnet,
     osLayer2
   }
+})
+
+export const updateOpenSeaBalance = (ids: number[]): UpdateOpenSeaBalance => ({
+  type: ActionType.UpdateOpenSeaBalance,
+  payload: ids
 })
 
 export const reset = (): Reset => ({

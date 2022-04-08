@@ -8,6 +8,7 @@ export enum ActionType {
   SetENS,
   SetBalances,
   SetTestnetBalances,
+  UpdateOpenSeaBalance,
   Reset
 }
 
@@ -57,6 +58,11 @@ export interface SetBalances {
   }
 }
 
+export interface UpdateOpenSeaBalance {
+  type: ActionType.UpdateOpenSeaBalance
+  payload: number[]
+}
+
 export interface Reset {
   type: ActionType.Reset
 }
@@ -68,4 +74,5 @@ export type AppActions =
   | SetAddress
   | SetENS
   | SetBalances
+  | UpdateOpenSeaBalance
   | Reset
