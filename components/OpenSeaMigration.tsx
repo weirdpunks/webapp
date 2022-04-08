@@ -4,7 +4,12 @@ import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { updateOpenSeaBalance, useApp } from '@/components/Context'
 import { openSea, weirdPunks as wp } from '@/utils/contracts'
 import { ethereum, mumbai, polygon, rinkeby } from '@/utils/mappings'
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
   Box,
   Button,
   CircularProgress,
@@ -109,22 +114,30 @@ const OpenSeaMigration = () => {
   }
 
   const handlePermission = async () => {
-    setChangingApproval(true)
-    const transaction = await os?.setApprovalForAll(weirdPunksContract, true)
-    setPermissionTx(transaction.hash)
-    await transaction.wait()
-    setCheckApproval(true)
+    try {
+      setChangingApproval(true)
+      const transaction = await os?.setApprovalForAll(weirdPunksContract, true)
+      setPermissionTx(transaction.hash)
+      await transaction.wait()
+      setCheckApproval(true)
+    } catch (_e) {
+      setChangingApproval(false)
+    }
   }
 
   const handleBurnAndMint = async () => {
-    setMigrating(true)
-    const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
-    const wp = new ethers.Contract(weirdPunksContract, abi, signer)
-    const transaction = await wp.burnAndMint(address, weirdPunks)
-    setMigrateTx(transaction.hash)
-    await transaction.wait()
-    await updateOSBalance()
-    setMigrating(false)
+    try {
+      setMigrating(true)
+      const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
+      const wp = new ethers.Contract(weirdPunksContract, abi, signer)
+      const transaction = await wp.burnAndMint(address, weirdPunks)
+      setMigrateTx(transaction.hash)
+      await transaction.wait()
+      await updateOSBalance()
+      setMigrating(false)
+    } catch (_e) {
+      setMigrating(false)
+    }
   }
 
   return loading ? (
@@ -139,7 +152,18 @@ const OpenSeaMigration = () => {
         </Text>
       </Stack>
       {weirdPunks && weirdPunks.length === 0 && migrateTx !== '' && (
-        <Text>Successfully Migrated!</Text>
+        <Alert status='success'>
+          <AlertIcon />
+          <Box flex={1}>
+            <AlertTitle>Successfully Migrated!</AlertTitle>
+
+            <AlertDescription display='block' px={4}>
+              <Link href={`${blockExplorer}${migrateTx}`} isExternal={true}>
+                View transaction <ExternalLinkIcon mx='2px' />
+              </Link>
+            </AlertDescription>
+          </Box>
+        </Alert>
       )}
       {weirdPunks && weirdPunks.length > 0 && (
         <>
@@ -187,9 +211,13 @@ const OpenSeaMigration = () => {
               </>
             )}
             {permissionTx !== '' && (
-              <Link href={`${blockExplorer}${permissionTx}`} isExternal={true}>
-                View transaction
-              </Link>
+              <Box p={4}>
+                <Link
+                  href={`${blockExplorer}${permissionTx}`}
+                  isExternal={true}>
+                  View transaction <ExternalLinkIcon mx='2px' />
+                </Link>
+              </Box>
             )}
           </Box>
           <Box mx={5} my={10}>
@@ -208,9 +236,11 @@ const OpenSeaMigration = () => {
               </Button>
             )}
             {migrateTx !== '' && (
-              <Link href={`${blockExplorer}${migrateTx}`} isExternal={true}>
-                View transaction
-              </Link>
+              <Box p={4}>
+                <Link href={`${blockExplorer}${migrateTx}`} isExternal={true}>
+                  View transaction <ExternalLinkIcon mx='2px' />
+                </Link>
+              </Box>
             )}
           </Box>
         </>
