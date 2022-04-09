@@ -41,45 +41,44 @@ const Claim = () => {
     <Box>
       <Center py={6}>
         <Stack direction={'column'} align={'center'} justify={'center'}>
-          {unclaimed > 0 ? (
-            <>
-              <Stack direction={'row'} align={'center'} justify={'center'}>
-                <Image
-                  src='/icons/aWeirdTokenPolygon.png'
-                  width={34}
-                  height={34}
-                  alt='$WEIRD'
-                />
-                <Text fontSize={'xl'} fontWeight={600}>
-                  {unclaimed} Unclaimed
-                </Text>
-              </Stack>
-              <Box p={4}>
-                {isLayer2 ? (
-                  <>
-                    {isClaiming ? (
-                      <CircularProgress
-                        size={'32px'}
-                        isIndeterminate
-                        color='green.300'
-                      />
-                    ) : (
-                      <Button onClick={handleClaim}>Claim</Button>
-                    )}
-                  </>
+          <Stack direction={'row'} align={'center'} justify={'center'}>
+            <Image
+              src='/icons/aWeirdTokenPolygon.png'
+              width={34}
+              height={34}
+              alt='$WEIRD'
+            />
+            <Text fontSize={'xl'} fontWeight={600}>
+              {unclaimed} Unclaimed
+            </Text>
+          </Stack>
+          <Box p={4} m={2} textAlign='center'>
+            {isLayer2 ? (
+              <>
+                {isClaiming ? (
+                  <CircularProgress
+                    size={'32px'}
+                    isIndeterminate
+                    color='green.300'
+                  />
                 ) : (
-                  <Text>
-                    Please switch to {isTestnet ? 'Mumbai' : 'Polygon'} to claim
-                  </Text>
+                  <Button
+                    onClick={handleClaim}
+                    disabled={Boolean(!isTestnet && unclaimed < 1)}>
+                    Claim
+                  </Button>
                 )}
-              </Box>
-            </>
-          ) : (
+              </>
+            ) : (
+              <Text>
+                Please switch to {isTestnet ? 'Mumbai' : 'Polygon'} to claim
+              </Text>
+            )}
             <Text>
               Each Weird Punk earns 1 WEIRD token per day. Come back anytime you
               have 1+ to claim.
             </Text>
-          )}
+          </Box>
           {tx !== '' && (
             <Box p={4}>
               <Link
