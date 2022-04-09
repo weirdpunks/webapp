@@ -130,7 +130,11 @@ const OpenSeaMigration = () => {
       setMigrating(true)
       const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
-      const transaction = await wp.burnAndMint(address, weirdPunks)
+      const limit = await wp.BATCH_LIMIT()
+      const transaction = await wp.burnAndMint(
+        address,
+        weirdPunks?.slice(0, limit)
+      )
       setMigrateTx(transaction.hash)
       await transaction.wait()
       await updateOSBalance()
