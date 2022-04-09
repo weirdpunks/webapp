@@ -248,36 +248,20 @@ const Wallet = () => {
     async ({
       contract,
       provider,
-      isLayer2,
-      blockFrom
+      isLayer2
     }: {
       contract: string
       provider: ethers.providers.JsonRpcProvider | undefined
       isLayer2: boolean
-      blockFrom: number
     }) => {
       try {
+        if (!isLayer2) {
+          return []
+        }
         const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
         const wp = new ethers.Contract(contract, abi, provider)
-        const balance = await wp.balanceOf(`${address}`)
-        if (provider && balance > 0) {
-          const numWP = parseInt(balance.toString())
-          const ids: number[] = []
-          const maxBlocks = 3499
-          const latest = await provider.getBlockNumber()
-          const filterTo = wp.filters.Transfer(null, address)
-          let start = blockFrom
-
-          while (ids.length < numWP) {
-            const to = start + maxBlocks > latest ? latest : start + maxBlocks
-            const res = await wp.queryFilter(filterTo, start, to)
-            for (let i = 0; i < res.length; i++) {
-              ids.push(parseInt(res[i].args?.tokenId.toString()))
-            }
-            start = to
-          }
-          return ids.sort((a, b) => a - b)
-        }
+        const ids: number[] = await wp.walletOfOwner(`${address}`)
+        return ids.sort((a, b) => a - b)
       } catch (e) {
         // console.log(JSON.stringify(e, null, 2))
         return []
@@ -289,16 +273,14 @@ const Wallet = () => {
   const getUnclaimedBalance = useCallback(
     async ({
       contract,
-      provider,
-      ids
+      provider
     }: {
       contract: string
       provider: ethers.providers.JsonRpcProvider | undefined
-      ids: number[]
     }) => {
       try {
         const claim = new ethers.Contract(contract, claimAbi, provider)
-        const unclaimed = await claim.claimableForIDs(ids)
+        const unclaimed = await claim.claimableForWallet(`${address}`)
         if (unclaimed) {
           return Math.floor(parseFloat(ethers.utils.formatUnits(unclaimed, 18)))
         }
@@ -306,7 +288,7 @@ const Wallet = () => {
         return 0
       }
     },
-    []
+    [address]
   )
 
   useEffect(() => {
@@ -332,26 +314,16 @@ const Wallet = () => {
       const mainnetWeirdPunks = await getWeirdPunks({
         contract: isTestnet ? weirdPunks.rinkeby.address : weirdPunks.mainnet,
         provider: mainnetProvider,
-        isLayer2: false,
-        blockFrom: isTestnet ? weirdPunks.rinkeby.blockFrom : 0
+        isLayer2: false
       })
       const layer2WeirdPunks = await getWeirdPunks({
         contract: isTestnet ? weirdPunks.mumbai.address : weirdPunks.polygon,
         provider: layer2Provider,
-        isLayer2: false,
-        blockFrom: isTestnet ? weirdPunks.mumbai.blockFrom : 0
+        isLayer2: false
       })
-      let wps: number[] = []
-      if (mainnetWeirdPunks) {
-        wps = [...wps, ...mainnetWeirdPunks]
-      }
-      if (layer2WeirdPunks) {
-        wps = [...wps, ...layer2WeirdPunks]
-      }
       const unclaimed = await getUnclaimedBalance({
         contract: isTestnet ? weirdClaim.mumbai : weirdClaim.polygon,
-        provider: layer2Provider,
-        ids: wps
+        provider: layer2Provider
       })
       dispatch(
         setBalances({

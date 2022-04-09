@@ -15,7 +15,7 @@ export const weirdPunks = {
   mainnet: '',
   polygon: '',
   mumbai: {
-    address: '0x194d826D1B5FCc85e31A1dDC237ba47e96eBa9D0',
+    address: '0xA71Af1E6a2884A6D2eE72997cf23592530Fd564B',
     blockFrom: 25861416
   },
   goerli: '',
