@@ -8,7 +8,7 @@ export const weird = {
 
 export const weirdClaim = {
   polygon: '',
-  mumbai: '0x194d826d1b5fcc85e31a1ddc237ba47e96eba9d0'
+  mumbai: '0xa0B0a56739661BA1e5C24982C91821404a97F2Ef'
 }
 
 export const weirdPunks = {
