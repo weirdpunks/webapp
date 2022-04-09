@@ -8,15 +8,15 @@ export const weird = {
 
 export const weirdClaim = {
   polygon: '',
-  mumbai: '0x1594c9d9BbBb34D8Cd1E4CCAfB2594cF55351eC2'
+  mumbai: '0x194d826d1b5fcc85e31a1ddc237ba47e96eba9d0'
 }
 
 export const weirdPunks = {
   mainnet: '',
   polygon: '',
   mumbai: {
-    address: '0x0ed13579c74eff623f228ec5d1572c5527ebd328',
-    blockFrom: 25811575
+    address: '0x194d826D1B5FCc85e31A1dDC237ba47e96eBa9D0',
+    blockFrom: 25861416
   },
   goerli: '',
   rinkeby: {
