@@ -1,6 +1,7 @@
 import {
   ActionType,
   AppActions,
+  Claimed,
   Reset,
   SetAddress,
   SetBalances,
@@ -13,6 +14,7 @@ import {
 import { AppContext } from '@/app/context'
 import {
   appReducer,
+  claimed,
   reset,
   setAddress,
   setBalances,
@@ -33,6 +35,7 @@ export type {
   SetAddress,
   SetENS,
   SetBalances,
+  Claimed,
   AppActions,
   Reset,
   UpdateOpenSeaBalance
@@ -48,6 +51,7 @@ export {
   setAddress,
   setENS,
   setBalances,
+  claimed,
   updateOpenSeaBalance,
   reset
 }

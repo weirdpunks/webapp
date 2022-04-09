@@ -74,7 +74,7 @@ const OpenSeaMigration = () => {
     if (chainId === 80001) {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.mumbai)
-      setWeirdPunksContract(wp.mumbai)
+      setWeirdPunksContract(wp.mumbai.address)
       setBlockExplorer('https://mumbai.polygonscan.com/tx/')
       setMapping(mumbai)
     } else if (chainId === 137) {
@@ -85,7 +85,7 @@ const OpenSeaMigration = () => {
     } else if (chainId === 4) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.rinkeby)
-      setWeirdPunksContract(wp.rinkeby)
+      setWeirdPunksContract(wp.rinkeby.address)
       setBlockExplorer('https://rinkeby.etherscan.io/tx/')
       setMapping(rinkeby)
     } else if (chainId === 1) {

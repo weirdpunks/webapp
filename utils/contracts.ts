@@ -1,16 +1,28 @@
 export const weird = {
   mainnet: '0xff5a1a18650fac5afa7c94a8dcb3ebf73b00ddb7',
   polygon: '0xcB8BCDb991B45bF5D78000a0b5C0A6686cE43790',
-  mumbai: '0x1f8Dc36AEE17dAe400179928f4eC8673AC40B1EE',
+  // mumbai: '0x1f8Dc36AEE17dAe400179928f4eC8673AC40B1EE',
+  mumbai: '0x326C977E6efc84E512bB9C30f76E30c160eD06FB', // $LINK
   goerli: '0x5c620C7dc781b38634bD79ddaA642CB3D5874061'
+}
+
+export const weirdClaim = {
+  polygon: '',
+  mumbai: '0x1594c9d9BbBb34D8Cd1E4CCAfB2594cF55351eC2'
 }
 
 export const weirdPunks = {
   mainnet: '',
   polygon: '',
-  mumbai: '0x0ed13579c74eff623f228ec5d1572c5527ebd328',
+  mumbai: {
+    address: '0x0ed13579c74eff623f228ec5d1572c5527ebd328',
+    blockFrom: 25811575
+  },
   goerli: '',
-  rinkeby: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C'
+  rinkeby: {
+    address: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C',
+    blockFrom: 10452467
+  }
 }
 
 export const openSea = {

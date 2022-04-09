@@ -7,7 +7,7 @@ export enum ActionType {
   SetAddress,
   SetENS,
   SetBalances,
-  SetTestnetBalances,
+  Claimed,
   UpdateOpenSeaBalance,
   Reset
 }
@@ -53,9 +53,16 @@ export interface SetBalances {
   payload: {
     weirdMainnet: number
     weirdLayer2: number
+    unclaimed: number
+    weirdPunksMainnet: number[]
+    weirdPunksLayer2: number[]
     osMainnet: number[]
     osLayer2: number[]
   }
+}
+
+export interface Claimed {
+  type: ActionType.Claimed
 }
 
 export interface UpdateOpenSeaBalance {
@@ -74,5 +81,6 @@ export type AppActions =
   | SetAddress
   | SetENS
   | SetBalances
+  | Claimed
   | UpdateOpenSeaBalance
   | Reset

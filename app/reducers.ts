@@ -1,6 +1,7 @@
 import {
   ActionType,
   AppActions,
+  Claimed,
   Reset,
   SetAddress,
   SetBalances,
@@ -60,9 +61,18 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         ...state,
         weirdMainnet: action.payload.weirdMainnet,
         weirdLayer2: action.payload.weirdLayer2,
+        unclaimed: action.payload.unclaimed,
+        weirdPunksMainnet: action.payload.weirdPunksMainnet,
+        weirdPunksLayer2: action.payload.weirdPunksLayer2,
         osMainnet: action.payload.osMainnet,
         osLayer2: action.payload.osLayer2,
         isLoadingBalances: false
+      }
+    case ActionType.Claimed:
+      return {
+        ...state,
+        weirdLayer2: state.weirdLayer2 + state.unclaimed,
+        unclaimed: 0
       }
     case ActionType.UpdateOpenSeaBalance:
       return {
@@ -136,11 +146,17 @@ export const setENS = (ens: string): SetENS => ({
 export const setBalances = ({
   weirdMainnet,
   weirdLayer2,
+  unclaimed,
+  weirdPunksMainnet,
+  weirdPunksLayer2,
   osMainnet,
   osLayer2
 }: {
   weirdMainnet: number
   weirdLayer2: number
+  unclaimed: number
+  weirdPunksMainnet: number[]
+  weirdPunksLayer2: number[]
   osMainnet: number[]
   osLayer2: number[]
 }): SetBalances => ({
@@ -148,9 +164,16 @@ export const setBalances = ({
   payload: {
     weirdMainnet,
     weirdLayer2,
+    unclaimed,
+    weirdPunksMainnet,
+    weirdPunksLayer2,
     osMainnet,
     osLayer2
   }
+})
+
+export const claimed = (): Claimed => ({
+  type: ActionType.Claimed
 })
 
 export const updateOpenSeaBalance = (ids: number[]): UpdateOpenSeaBalance => ({
