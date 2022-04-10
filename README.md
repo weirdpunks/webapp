@@ -12,7 +12,7 @@ In Visual Studio Code open a new Terminal and enter:
 
 ```bash
 npm install --global yarn
-git clone https://github.com/weirdpunks/weirdpunks.git
+git clone https://github.com/weirdpunks/webapp.git
 cd weirdpunks
 yarn
 yarn dev
