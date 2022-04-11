@@ -1,10 +1,18 @@
 import WPHeading from '@/components/UI/Heading'
 import { Box, Button, Heading, Link, Stack } from '@chakra-ui/react'
 import type { NextPage } from 'next'
+import Head from 'next/head'
 
 const DAO: NextPage = () => {
   return (
     <Box>
+      <Head>
+        <title>Weird Punks DAO</title>
+        <meta
+          name='description'
+          content='Community driven Decentralized Autonomous Organization with voting based on WEIRD token ownership.'
+        />
+      </Head>
       <WPHeading>Weird Punks DAO</WPHeading>
       <Box mt={4} p={4}>
         The Weird Punks DAO (Decentralized Autonomous Organization) is entirely

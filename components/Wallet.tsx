@@ -20,12 +20,14 @@ import {
 } from '@/utils/mappings'
 import { providerOptions } from '@/utils/wallet'
 import { useColorMode } from '@chakra-ui/react'
+import axios from 'axios'
 import { ethers } from 'ethers'
 import { useCallback, useEffect, useState } from 'react'
 import Web3Modal from 'web3modal'
 
 const cacheProvider = true
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
+const nftportApi = process.env.NEXT_PUBLIC_NFTPORT_API
 
 const Wallet = () => {
   const { colorMode } = useColorMode()
@@ -244,6 +246,41 @@ const Wallet = () => {
     [address]
   )
 
+  const getMainnetWeirdPunks = useCallback(
+    async ({ contract }: { contract: string }) => {
+      try {
+        interface NFT {
+          token_id: string
+        }
+
+        interface NFTPORT {
+          response: string
+          nfts: NFT[]
+        }
+        const url = `https://api.nftport.xyz/v0/accounts/${address}`
+        const res = await axios.get<NFTPORT>(url, {
+          params: {
+            chain: isTestnet ? 'rinkeby' : 'ethereum',
+            contract_address: contract
+          },
+          headers: {
+            Authorization: `${nftportApi}`
+          }
+        })
+        if (res.data.response === 'OK' && res.data.nfts.length > 0) {
+          const ids = res.data.nfts.map((i: { token_id: string }) =>
+            parseInt(i.token_id)
+          )
+          return ids.sort((a, b) => a - b)
+        }
+      } catch (e) {
+        // console.log(JSON.stringify(e, null, 2))
+        return []
+      }
+    },
+    [address]
+  )
+
   const getWeirdPunks = useCallback(
     async ({
       contract,
@@ -311,10 +348,8 @@ const Wallet = () => {
         provider: layer2Provider,
         mapping: isTestnet ? mumbaiMapping : polygonMapping
       })
-      const mainnetWeirdPunks = await getWeirdPunks({
-        contract: isTestnet ? weirdPunks.rinkeby.address : weirdPunks.mainnet,
-        provider: mainnetProvider,
-        isLayer2: false
+      const mainnetWeirdPunks = await getMainnetWeirdPunks({
+        contract: isTestnet ? weirdPunks.rinkeby.address : weirdPunks.mainnet
       })
       const layer2WeirdPunks = await getWeirdPunks({
         contract: isTestnet ? weirdPunks.mumbai.address : weirdPunks.polygon,

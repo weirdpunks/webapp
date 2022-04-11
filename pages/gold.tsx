@@ -1,18 +1,26 @@
 import Card from '@/components/UI/Card'
 import WPHeading from '@/components/UI/Heading'
 import {
+  Button,
   Container,
+  Link,
   SimpleGrid,
   Stack,
-  Text,
-  Button,
-  Link
+  Text
 } from '@chakra-ui/react'
 import type { NextPage } from 'next'
+import Head from 'next/head'
 
 const Home: NextPage = () => {
   return (
     <Container maxW={'5xl'}>
+      <Head>
+        <title>Weird Punks Gold</title>
+        <meta
+          name='description'
+          content='The Weird Punks Gold Collection is the second Weird Punks Collection with a total amount of 100.'
+        />
+      </Head>
       <WPHeading>Weird Punks Gold</WPHeading>
       <Stack
         textAlign={'center'}
