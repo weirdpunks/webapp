@@ -74,7 +74,7 @@ const OpenSeaMigration = () => {
     if (chainId === 80001) {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.mumbai)
-      setWeirdPunksContract(wp.mumbai.address)
+      setWeirdPunksContract(wp.mumbai)
       setBlockExplorer('https://mumbai.polygonscan.com/tx/')
       setMapping(mumbai)
     } else if (chainId === 137) {
@@ -85,7 +85,7 @@ const OpenSeaMigration = () => {
     } else if (chainId === 4) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.rinkeby)
-      setWeirdPunksContract(wp.rinkeby.address)
+      setWeirdPunksContract(wp.rinkeby)
       setBlockExplorer('https://rinkeby.etherscan.io/tx/')
       setMapping(rinkeby)
     } else if (chainId === 1) {
@@ -100,7 +100,7 @@ const OpenSeaMigration = () => {
   const updateOSBalance = async () => {
     if (mapping && mapping.length > 0) {
       const addresses = new Array(mapping.length).fill(address)
-      const ids = mapping?.map(i => i.osid)
+      const ids = mapping?.map((i) => i.osid)
       const balance = await os?.balanceOfBatch(addresses, ids)
       let found = []
       for (let i = 0; i < balance.length; i++) {

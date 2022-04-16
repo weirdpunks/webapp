@@ -1,16 +1,15 @@
-import { Box, Heading } from '@chakra-ui/react'
+import Heading from '@/components/UI/Heading'
+import Bridge from '@/components/Bridge'
+import { Box } from '@chakra-ui/react'
 import type { NextPage } from 'next'
 
-const Bridge: NextPage = () => {
+const BridgePage: NextPage = () => {
   return (
     <Box>
-      <Heading
-        fontWeight={600}
-        fontSize={{ base: '3xl', sm: '4xl', md: '6xl' }}>
-        Bridge
-      </Heading>
+      <Heading>Bridge</Heading>
+      <Bridge />
     </Box>
   )
 }
 
-export default Bridge
+export default BridgePage

@@ -14,15 +14,9 @@ export const weirdClaim = {
 export const weirdPunks = {
   mainnet: '',
   polygon: '',
-  mumbai: {
-    address: '0xA71Af1E6a2884A6D2eE72997cf23592530Fd564B',
-    blockFrom: 25861416
-  },
+  mumbai: '0xA71Af1E6a2884A6D2eE72997cf23592530Fd564B',
   goerli: '',
-  rinkeby: {
-    address: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C',
-    blockFrom: 10452467
-  }
+  rinkeby: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C'
 }
 
 export const openSea = {

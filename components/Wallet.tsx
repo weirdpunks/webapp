@@ -278,7 +278,7 @@ const Wallet = () => {
         return []
       }
     },
-    [address]
+    [address, isTestnet]
   )
 
   const getWeirdPunks = useCallback(
@@ -349,10 +349,10 @@ const Wallet = () => {
         mapping: isTestnet ? mumbaiMapping : polygonMapping
       })
       const mainnetWeirdPunks = await getMainnetWeirdPunks({
-        contract: isTestnet ? weirdPunks.rinkeby.address : weirdPunks.mainnet
+        contract: isTestnet ? weirdPunks.rinkeby : weirdPunks.mainnet
       })
       const layer2WeirdPunks = await getWeirdPunks({
-        contract: isTestnet ? weirdPunks.mumbai.address : weirdPunks.polygon,
+        contract: isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
         provider: layer2Provider,
         isLayer2: false
       })
@@ -394,6 +394,7 @@ const Wallet = () => {
     getERC20Balance,
     getERC1155BalanceOfBatch,
     getWeirdPunks,
+    getMainnetWeirdPunks,
     getUnclaimedBalance
   ])
 
