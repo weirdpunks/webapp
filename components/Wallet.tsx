@@ -21,7 +21,7 @@ import {
 import { providerOptions } from '@/utils/wallet'
 import { useColorMode } from '@chakra-ui/react'
 import axios from 'axios'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { useCallback, useEffect, useState } from 'react'
 import Web3Modal from 'web3modal'
 
@@ -264,10 +264,12 @@ const Wallet = () => {
             contract_address: contract
           },
           headers: {
+            'Content-Type': 'application/json',
             Authorization: `${nftportApi}`
           }
         })
         if (res.data.response === 'OK' && res.data.nfts.length > 0) {
+          // console.log(res.data)
           const ids = res.data.nfts.map((i: { token_id: string }) =>
             parseInt(i.token_id)
           )
@@ -281,7 +283,7 @@ const Wallet = () => {
     [address, isTestnet]
   )
 
-  const getWeirdPunks = useCallback(
+  const getLayer2WeirdPunks = useCallback(
     async ({
       contract,
       provider,
@@ -292,13 +294,12 @@ const Wallet = () => {
       isLayer2: boolean
     }) => {
       try {
-        if (!isLayer2) {
-          return []
-        }
         const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
         const wp = new ethers.Contract(contract, abi, provider)
-        const ids: number[] = await wp.walletOfOwner(`${address}`)
-        return ids.sort((a, b) => a - b)
+        const res: BigNumber[] = await wp.walletOfOwner(`${address}`)
+        const unsorted: number[] = res.map((i) => i.toNumber())
+        const sorted = unsorted.sort((a, b) => a - b)
+        return sorted
       } catch (e) {
         // console.log(JSON.stringify(e, null, 2))
         return []
@@ -351,7 +352,7 @@ const Wallet = () => {
       const mainnetWeirdPunks = await getMainnetWeirdPunks({
         contract: isTestnet ? weirdPunks.rinkeby : weirdPunks.mainnet
       })
-      const layer2WeirdPunks = await getWeirdPunks({
+      const layer2WeirdPunks = await getLayer2WeirdPunks({
         contract: isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
         provider: layer2Provider,
         isLayer2: false
@@ -393,7 +394,7 @@ const Wallet = () => {
     goerliProvider,
     getERC20Balance,
     getERC1155BalanceOfBatch,
-    getWeirdPunks,
+    getLayer2WeirdPunks,
     getMainnetWeirdPunks,
     getUnclaimedBalance
   ])
