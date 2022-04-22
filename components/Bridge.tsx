@@ -26,9 +26,8 @@ import { useEffect, useState, ChangeEvent } from 'react'
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
 const Bridge = () => {
-  const { state, dispatch } = useApp()
-  const { chainId, signer, address, isLayer2, isTestnet, weirdPunksLayer2 } =
-    state
+  const { state } = useApp()
+  const { signer, address, isLayer2, isTestnet, weirdPunksLayer2 } = state
 
   const [loading, setLoading] = useState(true)
   const [ids, setIds] = useState('')
@@ -52,8 +51,6 @@ const Bridge = () => {
   const [approvingWeirdToken, setApprovingWeirdToken] = useState(false)
   const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
   const [checkingWeirdApproval, setCheckingWeirdApproval] = useState(false)
-
-  const [checkingApproval, setCheckingApproval] = useState(false)
 
   const [bridgeTx, setBridgeTx] = useState('')
   const [bridging, setBridging] = useState(false)
@@ -88,8 +85,13 @@ const Bridge = () => {
 
   useEffect(() => {
     const wpReady = async () => {
-      const fee = await weirdPunksContract?.WEIRD_BRIDGE_FEE
-      setWeirdBridgeFee(fee.toNumber())
+      try {
+        const fee = await weirdPunksContract?.WEIRD_BRIDGE_FEE()
+        setWeirdBridgeFee(fee.toNumber())
+      } catch (e) {
+        console.log(e)
+        // setWeirdBridgeFee(0)
+      }
     }
 
     if (weirdPunksContract !== undefined) {
@@ -124,7 +126,11 @@ const Bridge = () => {
         address,
         isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
       )
-      if (isWETHApproved !== ethers.BigNumber.from(0)) {
+      if (
+        isWETHApproved &&
+        isWETHApproved._hex ===
+          '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+      ) {
         setWETHApproved(true)
       }
       setCheckingWETHApproval(false)
@@ -141,7 +147,11 @@ const Bridge = () => {
         address,
         isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
       )
-      if (isWeirdApproved !== ethers.BigNumber.from(0)) {
+      if (
+        isWeirdApproved &&
+        isWeirdApproved._hex ===
+          '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+      ) {
         setWeirdApproved(true)
       }
       setCheckingWeirdApproval(false)
@@ -201,14 +211,14 @@ const Bridge = () => {
   }
   const handleApproveWeirdToken = async () => {
     try {
-      setApprovingWETHToken(true)
-      const transaction = await wethContract?.approve(
+      setApprovingWeirdToken(true)
+      const transaction = await weirdContract?.approve(
         isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
-      setWETHApprovalTx(transaction.hash)
+      setWeirdApprovalTx(transaction.hash)
       await transaction.wait()
-      setApprovingWETHToken(false)
+      setApprovingWeirdToken(false)
     } catch (e) {
       console.log(e)
     }
@@ -280,7 +290,11 @@ const Bridge = () => {
       {weirdPunksLayer2 && weirdPunksLayer2.length > 0 && (
         <>
           <Box>
-            <Text>Step 1. Approve WEIRD</Text>
+            <Text>
+              Step 1. Approve WEIRD{' '}
+              {weirdBridgeFee !== 999999 &&
+                `(Bridge fee is ${weirdBridgeFee} WEIRD for each Weird Punk.)`}
+            </Text>
             {checkingWeirdApproval ? (
               <CircularProgress
                 size={'32px'}
