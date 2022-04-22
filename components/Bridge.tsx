@@ -2,7 +2,7 @@ import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
 import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { erc20abi } from '@/artifacts/erc20'
 import { useApp } from '@/components/Context'
-import { weirdPunks, weth } from '@/utils/contracts'
+import { weirdPunks, weth, weird } from '@/utils/contracts'
 import {
   Alert,
   AlertDescription,
@@ -30,36 +30,152 @@ const Bridge = () => {
   const { chainId, signer, address, isLayer2, isTestnet, weirdPunksLayer2 } =
     state
 
+  const [loading, setLoading] = useState(true)
   const [ids, setIds] = useState('')
+
+  const [weirdPunksContract, setWeirdPunksContract] =
+    useState<ethers.Contract>()
+  const [wethContract, setWETHContract] = useState<ethers.Contract>()
+  const [weirdBridgeFee, setWeirdBridgeFee] = useState(999999)
+  const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
+  const [wethApproved, setWETHApproved] = useState(false)
+  const [weirdApproved, setWeirdApproved] = useState(false)
+
   const [mainnetProvider, setMainnetProvider] =
     useState<ethers.providers.JsonRpcProvider>()
-  const [wethApproved, setWETHApproved] = useState(false)
+  const [mainnetExplorer, setMainnetExplorer] = useState('')
+  const [layer2Explorer, setLayer2Explorer] = useState('')
+
+  const [approvingWETHToken, setApprovingWETHToken] = useState(false)
+  const [wethApprovalTx, setWETHApprovalTx] = useState('')
+  const [checkingWETHApproval, setCheckingWETHApproval] = useState(true)
+  const [approvingWeirdToken, setApprovingWeirdToken] = useState(false)
+  const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
+  const [checkingWeirdApproval, setCheckingWeirdApproval] = useState(false)
+
   const [checkingApproval, setCheckingApproval] = useState(false)
-  const [changingApproval, setChangingApproval] = useState(false)
-  const [approvalTx, setApprovalTx] = useState('')
-  const [blockExplorer, setBlockExplorer] = useState('')
+
   const [bridgeTx, setBridgeTx] = useState('')
   const [bridging, setBridging] = useState(false)
 
   useEffect(() => {
-    setIds(weirdPunksLayer2.join(', '))
-  }, [weirdPunksLayer2])
+    const loadWeirdPunksContract = async () => {
+      const wpContract = new ethers.Contract(
+        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
+        weirdPunksLayer2Abi,
+        signer
+      )
+      setWeirdPunksContract(wpContract)
+    }
+    if (isLayer2 && address !== '' && weirdPunksContract === undefined) {
+      loadWeirdPunksContract()
+    }
+  }, [isLayer2, isTestnet, weirdPunksContract, address, signer])
 
   useEffect(() => {
-    if (isTestnet) {
+    const loadWETHContract = async () => {
+      const erc20 = new ethers.Contract(
+        isTestnet ? weth.mumbai : weth.polygon,
+        erc20abi,
+        signer
+      )
+      setWETHContract(erc20)
+    }
+    if (isLayer2 && address !== '' && wethContract === undefined) {
+      loadWETHContract()
+    }
+  }, [isLayer2, isTestnet, wethContract, address, signer])
+
+  useEffect(() => {
+    const wpReady = async () => {
+      const fee = await weirdPunksContract?.WEIRD_BRIDGE_FEE
+      setWeirdBridgeFee(fee.toNumber())
+    }
+
+    if (weirdPunksContract !== undefined) {
+      wpReady()
+    }
+  }, [weirdPunksContract])
+
+  useEffect(() => {
+    const loadWeirdContract = async () => {
+      const erc20 = new ethers.Contract(
+        isTestnet ? weird.mumbai : weird.polygon,
+        erc20abi,
+        signer
+      )
+      setWeirdContract(erc20)
+      setCheckingWeirdApproval(true)
+    }
+    if (
+      isLayer2 &&
+      address !== '' &&
+      weirdContract === undefined &&
+      weirdBridgeFee < 999999 &&
+      weirdBridgeFee > 0
+    ) {
+      loadWeirdContract()
+    }
+  }, [isLayer2, weirdBridgeFee, isTestnet, weirdContract, address, signer])
+
+  useEffect(() => {
+    const wethReady = async () => {
+      const isWETHApproved = await wethContract?.allowance(
+        address,
+        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
+      )
+      if (isWETHApproved !== ethers.BigNumber.from(0)) {
+        setWETHApproved(true)
+      }
+      setCheckingWETHApproval(false)
+    }
+
+    if (address !== '' && wethContract !== undefined) {
+      wethReady()
+    }
+  }, [wethContract, isTestnet, address])
+
+  useEffect(() => {
+    const weirdReady = async () => {
+      const isWeirdApproved = await weirdContract?.allowance(
+        address,
+        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
+      )
+      if (isWeirdApproved !== ethers.BigNumber.from(0)) {
+        setWeirdApproved(true)
+      }
+      setCheckingWeirdApproval(false)
+    }
+
+    if (address !== '' && weirdContract !== undefined) {
+      weirdReady()
+    }
+  }, [weirdContract, isTestnet, address])
+
+  useEffect(() => {
+    const init = () => {
       setMainnetProvider(
         new ethers.providers.JsonRpcProvider(
-          `https://rinkeby.infura.io/v3/${infuraId}`
+          `https://${
+            isTestnet ? 'rinkeby' : 'mainnet'
+          }.infura.io/v3/${infuraId}`
         )
       )
-    } else {
-      setMainnetProvider(
-        new ethers.providers.JsonRpcProvider(
-          `https://mainnet.infura.io/v3/${infuraId}`
-        )
+      setMainnetExplorer(
+        `https://${isTestnet ? 'rinkeby.' : ''}etherscan.io/tx/`
+      )
+      setLayer2Explorer(
+        `https://${isTestnet ? 'mumbai.' : ''}polygonscan.com/tx/`
       )
     }
-  }, [isTestnet])
+    if (isLayer2) {
+      init()
+    }
+  }, [isTestnet, isLayer2])
+
+  useEffect(() => {
+    setIds(weirdPunksLayer2.join(', '))
+  }, [weirdPunksLayer2])
 
   const welcome = isTestnet
     ? 'Bridge from Mumbai to Rinkeby'
@@ -69,41 +185,30 @@ const Bridge = () => {
     setIds(e.target.value)
   }
 
-  useEffect(() => {
-    const checkApproval = async () => {
-      try {
-        const token = isTestnet ? weth.mumbai : weth.polygon
-        const nft = isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
-        const layer2Eth = new ethers.Contract(token, erc20abi, signer)
-        const approvalTrans = await layer2Eth.allowance(address, nft)
-        if (approvalTrans !== ethers.BigNumber.from(0)) {
-          setWETHApproved(true)
-        }
-        setCheckingApproval(false)
-      } catch (e) {
-        console.log(e)
-        setCheckingApproval(false)
-      }
-    }
-    if (isLayer2) {
-      checkApproval()
-    }
-  }, [address, isLayer2, isTestnet, signer])
-
   const handleWETHApprove = async () => {
     try {
-      setChangingApproval(true)
-      const token = isTestnet ? weth.mumbai : weth.polygon
-      const nft = isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
-
-      const layer2Eth = new ethers.Contract(token, erc20abi, signer)
-      const transaction = await layer2Eth.approve(
-        nft,
+      setApprovingWETHToken(true)
+      const transaction = await wethContract?.approve(
+        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
-      setApprovalTx(transaction.hash)
+      setWETHApprovalTx(transaction.hash)
       await transaction.wait()
-      setChangingApproval(false)
+      setApprovingWETHToken(false)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleApproveWeirdToken = async () => {
+    try {
+      setApprovingWETHToken(true)
+      const transaction = await wethContract?.approve(
+        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
+        '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+      )
+      setWETHApprovalTx(transaction.hash)
+      await transaction.wait()
+      setApprovingWETHToken(false)
     } catch (e) {
       console.log(e)
     }
@@ -126,22 +231,23 @@ const Bridge = () => {
         weirdPunksMainnetAbi,
         mainnetProvider
       )
-      const mainnetGas = await wpMain.estimateGas.depositBridge(
-        address,
-        bridgeIds
-      )
-      console.log(mainnetGas)
-      const gasPrice = await mainnetProvider?.getGasPrice()
-      console.log(gasPrice)
-      const price = gasPrice ? gasPrice.toString() : ''
-      const gasFormat = parseInt(ethers.utils.formatUnits(mainnetGas, 'wei'))
-      const priceFormat = parseInt(ethers.utils.formatUnits(price, 'wei')) * 1.1
-      const gas1 = ethers.utils.formatEther(gasFormat * priceFormat)
+      // const mainnetGas = await wpMain.estimateGas.depositBridge(
+      //   address,
+      //   bridgeIds
+      // )
+      // const gasPrice = await mainnetProvider?.getGasPrice()
+      // const price = gasPrice ? gasPrice.toString() : ''
+      // const gasFormat = parseInt(ethers.utils.formatUnits(mainnetGas, 'wei'))
+      // const priceFormat = parseInt(ethers.utils.formatUnits(price, 'wei')) * 1.1
+      // const gas1 = ethers.utils.formatEther(gasFormat * priceFormat) || 0
 
       const gas2 = await wpL2.gasETH()
-      console.log(gas2)
-      const gas = gas1 > gas2 ? gas1 : gas2
-      const txn = wpL2.batchBridge(bridgeIds.join(', '), gas)
+      // console.log(gas2)
+      // const gas = gas1 > gas2 ? gas1 : gas2
+      const txn = wpL2.batchBridge(bridgeIds, gas2, {
+        gasLimit: 6000000,
+        gasPrice: ethers.utils.parseUnits('30.0', 'gwei')
+      })
       setBridgeTx(txn.hash)
       await txn.wait()
       setBridging(false)
@@ -163,7 +269,7 @@ const Bridge = () => {
             <AlertTitle>Successfully Bridged!</AlertTitle>
 
             <AlertDescription display='block' px={4}>
-              <Link href={`${blockExplorer}${bridgeTx}`} isExternal={true}>
+              <Link href={`${layer2Explorer}${bridgeTx}`} isExternal={true}>
                 View transaction <ExternalLinkIcon mx='2px' />
               </Link>
             </AlertDescription>
@@ -174,8 +280,59 @@ const Bridge = () => {
       {weirdPunksLayer2 && weirdPunksLayer2.length > 0 && (
         <>
           <Box>
-            <Text>Step 1. Approve WETH</Text>
-            {checkingApproval ? (
+            <Text>Step 1. Approve WEIRD</Text>
+            {checkingWeirdApproval ? (
+              <CircularProgress
+                size={'32px'}
+                isIndeterminate
+                color='green.300'
+              />
+            ) : (
+              <>
+                {!weirdApproved ? (
+                  <>
+                    {approvingWeirdToken ? (
+                      <>
+                        <CircularProgress
+                          size={'12px'}
+                          isIndeterminate
+                          color='green.300'
+                        />
+                      </>
+                    ) : (
+                      <Button onClick={handleApproveWeirdToken}>
+                        Authorize{' '}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Stack direction={'row'} align={'center'}>
+                    <Flex
+                      w={8}
+                      h={8}
+                      align={'center'}
+                      justify={'center'}
+                      rounded={'full'}>
+                      <Icon as={FaCheckCircle} color='green.500' />
+                    </Flex>
+                    <Text fontWeight={600}>Approved</Text>
+                  </Stack>
+                )}
+              </>
+            )}
+            {weirdApprovalTx !== '' && (
+              <Box p={4}>
+                <Link
+                  href={`${layer2Explorer}${weirdApprovalTx}`}
+                  isExternal={true}>
+                  View transaction <ExternalLinkIcon mx='2px' />
+                </Link>
+              </Box>
+            )}
+          </Box>
+          <Box>
+            <Text>Step 2. Approve WETH</Text>
+            {checkingWETHApproval ? (
               <CircularProgress
                 size={'32px'}
                 isIndeterminate
@@ -185,7 +342,7 @@ const Bridge = () => {
               <>
                 {!wethApproved ? (
                   <>
-                    {changingApproval ? (
+                    {approvingWETHToken ? (
                       <>
                         <CircularProgress
                           size={'12px'}
@@ -212,16 +369,18 @@ const Bridge = () => {
                 )}
               </>
             )}
-            {approvalTx !== '' && (
+            {wethApprovalTx !== '' && (
               <Box p={4}>
-                <Link href={`${blockExplorer}${approvalTx}`} isExternal={true}>
+                <Link
+                  href={`${layer2Explorer}${wethApprovalTx}`}
+                  isExternal={true}>
                   View transaction <ExternalLinkIcon mx='2px' />
                 </Link>
               </Box>
             )}
           </Box>
           <Box mx={5} my={10}>
-            <Text>Step 2. Bridge to Mainnet</Text>
+            <Text>Step 3. Bridge to Mainnet</Text>
             {bridging ? (
               <>
                 <CircularProgress
@@ -244,7 +403,7 @@ const Bridge = () => {
             )}
             {bridgeTx !== '' && (
               <Box p={4}>
-                <Link href={`${blockExplorer}${bridgeTx}`} isExternal={true}>
+                <Link href={`${layer2Explorer}${bridgeTx}`} isExternal={true}>
                   View transaction <ExternalLinkIcon mx='2px' />
                 </Link>
               </Box>

@@ -1,27 +1,24 @@
-const mumbaiLink = '0x326C977E6efc84E512bB9C30f76E30c160eD06FB'
-
 export const weird = {
   mainnet: '0xff5a1a18650fac5afa7c94a8dcb3ebf73b00ddb7',
   polygon: '0xcB8BCDb991B45bF5D78000a0b5C0A6686cE43790',
-  // mumbai: '0x1f8Dc36AEE17dAe400179928f4eC8673AC40B1EE',
-  mumbai: mumbaiLink,
+  mumbai: '0x70d2a1eee95fc742d64a72e649ee811c6b117cc0',
   goerli: '0x5c620C7dc781b38634bD79ddaA642CB3D5874061'
 }
 
 export const weth = {
   polygon: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
-  mumbai: mumbaiLink
+  mumbai: '0xeb1385575867578fc618ca04c94afe1dedfe3298'
 }
 
 export const weirdClaim = {
   polygon: '',
-  mumbai: '0xa0B0a56739661BA1e5C24982C91821404a97F2Ef'
+  mumbai: '0xE8110E58C5F22b9b899755535A33bC56cA7E645f'
 }
 
 export const weirdPunks = {
   mainnet: '',
   polygon: '',
-  mumbai: '0xA71Af1E6a2884A6D2eE72997cf23592530Fd564B',
+  mumbai: '0x5ef879ba18f8309cc403fe4041d7d1ff86feb2bd',
   goerli: '',
   rinkeby: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C'
 }
