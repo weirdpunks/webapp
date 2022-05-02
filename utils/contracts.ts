@@ -20,7 +20,7 @@ export const weirdPunks = {
   polygon: '',
   mumbai: '0x5ef879ba18f8309cc403fe4041d7d1ff86feb2bd',
   goerli: '',
-  rinkeby: '0x230468e7d7ab1DEF55c6628aF2702D0549eAB372'
+  rinkeby: '0x2d2aEde66a686a0CfC8bD84112d14f07cA41400C'
 }
 
 export const openSea = {
