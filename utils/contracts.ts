@@ -12,7 +12,7 @@ export const weth = {
 
 export const weirdClaim = {
   polygon: '',
-  mumbai: '0xE8110E58C5F22b9b899755535A33bC56cA7E645f'
+  mumbai: '0xa8e1Ab5e6D82668dCB35bca19fC15Fc6ff646d4A'
 }
 
 export const weirdPunks = {
@@ -20,7 +20,7 @@ export const weirdPunks = {
   polygon: '',
   mumbai: '0x5ef879ba18f8309cc403fe4041d7d1ff86feb2bd',
   goerli: '',
-  rinkeby: '0x97E080EC2c10d1721286623021fC51C1E4b58C7C'
+  rinkeby: '0x230468e7d7ab1DEF55c6628aF2702D0549eAB372'
 }
 
 export const openSea = {
