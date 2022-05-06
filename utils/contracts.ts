@@ -11,15 +11,14 @@ export const weth = {
 }
 
 export const weirdClaim = {
-  polygon: '',
+  polygon: '0x2Fd50c24C7170B303b4d7c1fC00d985bf844111b',
   mumbai: '0x71eC5c628498a48f0C1a561E858905852E51aC80'
 }
 
 export const weirdPunks = {
-  mainnet: '',
-  polygon: '',
+  mainnet: '0x29c7aC3C0b9AaCa1d53f75720ba2821C65FE77Fa',
+  polygon: '0x34570e0cb7ea8e1609b3b703d7df7026d83a1fdf',
   mumbai: '0x5ef879ba18f8309cc403fe4041d7d1ff86feb2bd',
-  goerli: '',
   rinkeby: '0xfdd23649cA6ECa7778f19DefEf1dBEF3c23030aF'
 }
 

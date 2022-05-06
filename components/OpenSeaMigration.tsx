@@ -80,6 +80,7 @@ const OpenSeaMigration = () => {
     } else if (chainId === 137) {
       setWeirdPunks(osLayer2)
       setOpenSeaContract(openSea.polygon)
+      setWeirdPunksContract(wp.polygon)
       setBlockExplorer('https://polygonscan.com/tx/')
       setMapping(polygon)
     } else if (chainId === 4) {
@@ -91,6 +92,7 @@ const OpenSeaMigration = () => {
     } else if (chainId === 1) {
       setWeirdPunks(osMainnet)
       setOpenSeaContract(openSea.mainnet)
+      setWeirdPunksContract(wp.mainnet)
       setBlockExplorer('https://etherscan.io/tx/')
       setMapping(ethereum)
     }

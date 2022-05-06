@@ -21,9 +21,11 @@ import {
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { FaCheckCircle } from 'react-icons/fa'
 import { ethers } from 'ethers'
-import { useEffect, useState, ChangeEvent } from 'react'
+import axios from 'axios'
+import { useCallback, useEffect, useState, ChangeEvent } from 'react'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
+const gasApiUrl = process.env.NEXT_PUBLIC_GAS_API_URL
 
 const Bridge = () => {
   const { state } = useApp()
@@ -87,7 +89,7 @@ const Bridge = () => {
     const wpReady = async () => {
       try {
         const fee = await weirdPunksContract?.WEIRD_BRIDGE_FEE()
-        setWeirdBridgeFee(fee.toNumber())
+        setWeirdBridgeFee(parseInt(ethers.utils.formatUnits(fee, 'ether')))
       } catch (e) {
         console.log(e)
         // setWeirdBridgeFee(0)
@@ -195,6 +197,27 @@ const Bridge = () => {
     setIds(e.target.value)
   }
 
+  const getMainnetGasFee = async () => {
+    try {
+      interface GASAPI {
+        response: string
+      }
+      const res = await axios.get<GASAPI>(gasApiUrl as string, {
+        params: {
+          ids: ids
+            .split(', ')
+            .map((i) => parseInt(i))
+            .join(',')
+        }
+      })
+      console.log(res)
+      return res
+    } catch (e) {
+      // console.log(JSON.stringify(e, null, 2))
+      return ''
+    }
+  }
+
   const handleWETHApprove = async () => {
     try {
       setApprovingWETHToken(true)
@@ -229,37 +252,27 @@ const Bridge = () => {
       setBridging(true)
       const bridgeIds = ids.split(', ').map((i) => parseInt(i))
 
-      const l2Contract = isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
-      const mainnetContract = isTestnet
-        ? weirdPunks.rinkeby
-        : weirdPunks.mainnet
+      const contract = isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
+      const wpL2 = new ethers.Contract(contract, weirdPunksLayer2Abi, signer)
 
-      const wpL2 = new ethers.Contract(l2Contract, weirdPunksLayer2Abi, signer)
-
-      const wpMain = new ethers.Contract(
-        mainnetContract,
-        weirdPunksMainnetAbi,
-        mainnetProvider
+      const mainnetGas = await getMainnetGasFee()
+      const gasPrice = await mainnetProvider?.getGasPrice()
+      const price = gasPrice ? gasPrice.toString() : ''
+      const gasFormat = parseInt(
+        ethers.utils.formatUnits(mainnetGas as string, 'wei')
       )
-      // const mainnetGas = await wpMain.estimateGas.depositBridge(
-      //   address,
-      //   bridgeIds
-      // )
-      // const gasPrice = await mainnetProvider?.getGasPrice()
-      // const price = gasPrice ? gasPrice.toString() : ''
-      // const gasFormat = parseInt(ethers.utils.formatUnits(mainnetGas, 'wei'))
-      // const priceFormat = parseInt(ethers.utils.formatUnits(price, 'wei')) * 1.1
-      // const gas1 = ethers.utils.formatEther(gasFormat * priceFormat) || 0
+      const priceFormat = parseInt(ethers.utils.formatUnits(price, 'wei')) * 1.1
+      const gas1 = ethers.utils.formatEther(gasFormat * priceFormat) || 0
 
-      const gas2 = await wpL2.gasETH()
-      // console.log(gas2)
-      // const gas = gas1 > gas2 ? gas1 : gas2
-      const txn = wpL2.batchBridge(bridgeIds, gas2, {
-        gasLimit: 6000000,
-        gasPrice: ethers.utils.parseUnits('30.0', 'gwei')
-      })
-      setBridgeTx(txn.hash)
-      await txn.wait()
+      const gas2 = (await wpL2.gasETH()) || 0
+      const gas = gas1 > gas2 ? gas1 : gas2
+      if (gas === 0) {
+        throw new Error('Unable to retreive gas estimate')
+      }
+      console.log(gas)
+      // const txn = wpL2.batchBridge(bridgeIds, gas)
+      // setBridgeTx(txn.hash)
+      // await txn.wait()
       setBridging(false)
     } catch (e) {
       console.log(e)
