@@ -2,7 +2,7 @@ import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
 import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { erc20abi } from '@/artifacts/erc20'
 import { useApp } from '@/components/Context'
-import { weirdPunks, weth, weird } from '@/utils/contracts'
+import { weirdPunks as weirdPunksAddress, weth, weird } from '@/utils/contracts'
 import {
   Alert,
   AlertDescription,
@@ -41,6 +41,7 @@ const Bridge = () => {
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [wethApproved, setWETHApproved] = useState(false)
   const [weirdApproved, setWeirdApproved] = useState(false)
+  const [wethEstimate, setWethEstimate] = useState(0.0)
 
   const [mainnetProvider, setMainnetProvider] =
     useState<ethers.providers.JsonRpcProvider>()
@@ -60,7 +61,7 @@ const Bridge = () => {
   useEffect(() => {
     const loadWeirdPunksContract = async () => {
       const wpContract = new ethers.Contract(
-        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
+        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon,
         weirdPunksLayer2Abi,
         signer
       )
@@ -126,7 +127,7 @@ const Bridge = () => {
     const wethReady = async () => {
       const isWETHApproved = await wethContract?.allowance(
         address,
-        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
+        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon
       )
       if (
         isWETHApproved &&
@@ -147,7 +148,7 @@ const Bridge = () => {
     const weirdReady = async () => {
       const isWeirdApproved = await weirdContract?.allowance(
         address,
-        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
+        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon
       )
       if (
         isWeirdApproved &&
@@ -210,8 +211,7 @@ const Bridge = () => {
             .join(',')
         }
       })
-      console.log(res)
-      return res
+      return res.data
     } catch (e) {
       // console.log(JSON.stringify(e, null, 2))
       return ''
@@ -222,7 +222,7 @@ const Bridge = () => {
     try {
       setApprovingWETHToken(true)
       const transaction = await wethContract?.approve(
-        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
+        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
       setWETHApprovalTx(transaction.hash)
@@ -236,7 +236,7 @@ const Bridge = () => {
     try {
       setApprovingWeirdToken(true)
       const transaction = await weirdContract?.approve(
-        isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
+        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
       setWeirdApprovalTx(transaction.hash)
@@ -252,27 +252,31 @@ const Bridge = () => {
       setBridging(true)
       const bridgeIds = ids.split(', ').map((i) => parseInt(i))
 
-      const contract = isTestnet ? weirdPunks.mumbai : weirdPunks.polygon
-      const wpL2 = new ethers.Contract(contract, weirdPunksLayer2Abi, signer)
-
-      const mainnetGas = await getMainnetGasFee()
-      const gasPrice = await mainnetProvider?.getGasPrice()
-      const price = gasPrice ? gasPrice.toString() : ''
-      const gasFormat = parseInt(
-        ethers.utils.formatUnits(mainnetGas as string, 'wei')
+      const contract = isTestnet
+        ? weirdPunksAddress.mumbai
+        : weirdPunksAddress.polygon
+      const weirdPunks = new ethers.Contract(
+        contract,
+        weirdPunksLayer2Abi,
+        signer
       )
-      const priceFormat = parseInt(ethers.utils.formatUnits(price, 'wei')) * 1.1
-      const gas1 = ethers.utils.formatEther(gasFormat * priceFormat) || 0
 
-      const gas2 = (await wpL2.gasETH()) || 0
-      const gas = gas1 > gas2 ? gas1 : gas2
-      if (gas === 0) {
-        throw new Error('Unable to retreive gas estimate')
+      if (mainnetProvider && weirdPunks) {
+        const currEthGas = await (
+          await mainnetProvider.getGasPrice()
+        ).toString()
+        console.log(currEthGas, 'Current ETH Gas')
+        const oracleEthGas = await weirdPunks.gasETH()
+        console.log(oracleEthGas, 'Oracle ETH Gas')
+
+        const ethGas = currEthGas > oracleEthGas ? currEthGas : oracleEthGas
+
+        console.log(ethGas, 'ETH Gas')
+        // const txn = wpL2.batchBridge(bridgeIds, gas)
+        // setBridgeTx(txn.hash)
+        // await txn.wait()
       }
-      console.log(gas)
-      // const txn = wpL2.batchBridge(bridgeIds, gas)
-      // setBridgeTx(txn.hash)
-      // await txn.wait()
+
       setBridging(false)
     } catch (e) {
       console.log(e)
@@ -284,6 +288,7 @@ const Bridge = () => {
   ) : (
     <Box>
       <Text>{welcome}</Text>
+      <Button onClick={() => getMainnetGasFee()}>Gas Check</Button>
 
       {weirdPunksLayer2 && weirdPunksLayer2.length === 0 && bridgeTx !== '' && (
         <Alert status='success'>
@@ -423,6 +428,12 @@ const Bridge = () => {
                   value={ids}
                   onChange={handleIds}
                 />
+                {weirdBridgeFee !== 999999 && (
+                  <Text>Polygon WEIRD Bridge Fee: {weirdBridgeFee}</Text>
+                )}
+                {wethEstimate !== 0.0 && (
+                  <Text>Polygon WETH Gas Fee: {wethEstimate}</Text>
+                )}
                 <Button onClick={handleBridge} disabled={!wethApproved}>
                   Bridge
                 </Button>

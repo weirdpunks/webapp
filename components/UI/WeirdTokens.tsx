@@ -5,12 +5,18 @@ import Image from 'next/image'
 
 const WeirdTokens = () => {
   const { state } = useApp()
-  const { isLoadingBalances, weirdMainnet, weirdLayer2, isTestnet, isLayer2 } =
-    state
+  const {
+    isLoadingBalances,
+    weirdMainnet,
+    weirdLayer2,
+    isTestnet,
+    isLayer2,
+    address
+  } = state
 
-  const addWeirdToken = async () => {
+  const addPolygonWeirdToken = async () => {
     try {
-      await await window?.ethereum?.request({
+      await window?.ethereum?.request({
         method: 'wallet_watchAsset',
         params: {
           type: 'ERC20',
@@ -19,7 +25,26 @@ const WeirdTokens = () => {
             symbol: 'WEIRD',
             decimals: 18,
             image:
-              'https://github.com/weirdpunks/webapp/blob/main/public/icons/weirdTokenPolygonMetaMask.png?raw=true'
+              'https://raw.githubusercontent.com/weirdpunks/webapp/main/public/icons/weirdTokenPolygon.png'
+          }
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const addEthereumWeirdToken = async () => {
+    try {
+      await window?.ethereum?.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: isTestnet ? weird.goerli : weird.mainnet,
+            symbol: 'WEIRD',
+            decimals: 18,
+            image:
+              'https://raw.githubusercontent.com/weirdpunks/webapp/main/public/icons/weirdTokenMainnet.png'
           }
         }
       })
@@ -32,25 +57,14 @@ const WeirdTokens = () => {
     <CircularProgress value={80} />
   ) : (
     <>
-      {(weirdMainnet > 0 || weirdLayer2 > 0) && (
+      {address !== '' && (
         <Box textAlign='center' py={10} px={6}>
           {weirdMainnet > 0 && (
             <Stack direction={'row'} align={'center'} justify={'center'}>
-              <Image
-                src='/icons/aWeirdTokenMainnet.png'
-                width={34}
-                height={34}
-                alt='$WEIRD'
-              />
-              <Text fontWeight={600}>{weirdMainnet.toLocaleString()}</Text>
-            </Stack>
-          )}
-          {weirdLayer2 > 0 && (
-            <Stack direction={'row'} align={'center'} justify={'center'}>
-              {isLayer2 ? (
-                <Link onClick={addWeirdToken}>
+              {!isLayer2 ? (
+                <Link onClick={addEthereumWeirdToken}>
                   <Image
-                    src='/icons/aWeirdTokenPolygon.png'
+                    src='/icons/aWeirdTokenMainnet.png'
                     width={34}
                     height={34}
                     alt='$WEIRD'
@@ -58,16 +72,36 @@ const WeirdTokens = () => {
                 </Link>
               ) : (
                 <Image
-                  src='/icons/aWeirdTokenPolygon.png'
+                  src='/icons/aWeirdTokenMainnet.png'
                   width={34}
                   height={34}
                   alt='$WEIRD'
                 />
               )}
 
-              <Text fontWeight={600}>{weirdLayer2.toLocaleString()}</Text>
+              <Text fontWeight={600}>{weirdMainnet.toLocaleString()}</Text>
             </Stack>
           )}
+          <Stack direction={'row'} align={'center'} justify={'center'}>
+            {isLayer2 ? (
+              <Link onClick={addPolygonWeirdToken}>
+                <Image
+                  src='/icons/aWeirdTokenPolygon.png'
+                  width={34}
+                  height={34}
+                  alt='$WEIRD'
+                />
+              </Link>
+            ) : (
+              <Image
+                src='/icons/aWeirdTokenPolygon.png'
+                width={34}
+                height={34}
+                alt='$WEIRD'
+              />
+            )}
+            <Text fontWeight={600}>{weirdLayer2.toLocaleString()}</Text>
+          </Stack>
         </Box>
       )}
     </>

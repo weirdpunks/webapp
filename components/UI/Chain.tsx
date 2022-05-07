@@ -15,7 +15,7 @@ const ChainComponent = () => {
 
   useEffect(() => {
     if (chainId) {
-      const newChain = chains.find(i => i.id === chainId)
+      const newChain = chains.find((i) => i.id === chainId)
       setSelectedChain(newChain)
     }
   }, [chainId])
@@ -25,15 +25,16 @@ const ChainComponent = () => {
     message?: string
   }
 
-  const handleSwitchNetwork = (id: string) => {
+  const handleSwitchNetwork = async (id: string) => {
     const attemptSwitch = async () => {
-      if (signer) {
+      const wallet = window?.ethereum
+      if (signer && wallet) {
         try {
-          await window?.ethereum?.request({
+          await wallet.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: id }]
           })
-          const newChain = chains.find(i => i.key === id)
+          const newChain = chains.find((i) => i.key === id)
           if (newChain) {
             dispatch(
               setChain({
@@ -43,33 +44,47 @@ const ChainComponent = () => {
               })
             )
           }
-        } catch (e) {
-          if (typeof e === 'object' && e !== null && 'code' in e) {
-            const values: any[] = Object.values(e)
-            if (values.includes(4902)) {
-              try {
-                const newChain = chains.find(i => i.key === id)
-                if (newChain?.parameter) {
-                  await window?.ethereum?.request({
-                    method: 'wallet_addEthereumChain',
-                    params: newChain.parameter
-                  })
-                  // dispatch(
-                  //   setChain({
-                  //     chain: newChain.id,
-                  //     isTestnet: Boolean(newChain.testnet)
-                  //   })
-                  // )
-                }
-              } catch (addError) {
-                console.log('Unable to add network')
-              }
-            }
-          }
-        }
+          return true
+        } catch (_e) {}
       }
+      return false
     }
-    attemptSwitch()
+
+    const addPolygonNetwork = async () => {
+      try {
+        const wallet = window?.ethereum
+        if (wallet) {
+          await wallet.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0x89',
+                chainName: 'Polygon Mainnet',
+                nativeCurrency: {
+                  name: 'Matic',
+                  symbol: 'MATIC',
+                  decimals: 18
+                },
+                rpcUrls: ['https://polygon-rpc.com/'],
+                blockExplorerUrls: ['https://polygonscan.com/']
+              }
+            ]
+          })
+          dispatch(
+            setChain({
+              chainId: 137,
+              isTestnet: false,
+              isLayer2: true
+            })
+          )
+        }
+      } catch (_e) {}
+    }
+
+    const switched = await attemptSwitch()
+    if (!switched && chainId === 1) {
+      await addPolygonNetwork()
+    }
   }
 
   return (
@@ -85,7 +100,7 @@ const ChainComponent = () => {
           <MenuList>
             <>
               {chains.map(
-                item =>
+                (item) =>
                   (!item.isTestnet || (item.isTestnet && displayTestnets)) && (
                     <MenuItem
                       key={item.hex}
