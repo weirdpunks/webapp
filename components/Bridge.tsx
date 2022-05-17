@@ -1,8 +1,13 @@
 import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
-import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
+import { gasCalculatorAbi } from '@/artifacts/gasCalculator'
 import { erc20abi } from '@/artifacts/erc20'
 import { useApp } from '@/components/Context'
-import { weirdPunks as weirdPunksAddress, weth, weird } from '@/utils/contracts'
+import {
+  weirdPunks as weirdPunksAddress,
+  weth,
+  weird,
+  gasCalculator
+} from '@/utils/contracts'
 import {
   Alert,
   AlertDescription,
@@ -41,7 +46,8 @@ const Bridge = () => {
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [wethApproved, setWETHApproved] = useState(false)
   const [weirdApproved, setWeirdApproved] = useState(false)
-  const [wethEstimate, setWethEstimate] = useState(0.0)
+  const [wethEstimate, setWethEstimate] = useState(0)
+  const [wethDisplay, setWethDisplay] = useState('')
 
   const [mainnetProvider, setMainnetProvider] =
     useState<ethers.providers.JsonRpcProvider>()
@@ -198,12 +204,9 @@ const Bridge = () => {
     setIds(e.target.value)
   }
 
-  const getMainnetGasFee = async () => {
+  const getMainnetGasFee = useCallback(async () => {
     try {
-      interface GASAPI {
-        response: string
-      }
-      const res = await axios.get<GASAPI>(gasApiUrl as string, {
+      const res = await axios.get(gasApiUrl as string, {
         params: {
           ids: ids
             .split(', ')
@@ -211,12 +214,22 @@ const Bridge = () => {
             .join(',')
         }
       })
-      return res.data
+      setWethEstimate(parseInt(res.data as string))
+      const str = parseFloat(
+        ethers.utils.formatUnits(res.data as string, 'ether')
+      )
+      const rounded = Math.round((str + Number.EPSILON) * 10000) / 10000
+      setWethDisplay(rounded.toString())
     } catch (e) {
-      // console.log(JSON.stringify(e, null, 2))
-      return ''
+      console.log(JSON.stringify(e, null, 2))
     }
-  }
+  }, [ids])
+
+  useEffect(() => {
+    if (ids !== '') {
+      getMainnetGasFee()
+    }
+  }, [ids, getMainnetGasFee])
 
   const handleWETHApprove = async () => {
     try {
@@ -252,29 +265,26 @@ const Bridge = () => {
       setBridging(true)
       const bridgeIds = ids.split(', ').map((i) => parseInt(i))
 
-      const contract = isTestnet
-        ? weirdPunksAddress.mumbai
-        : weirdPunksAddress.polygon
+      const gas = new ethers.Contract(
+        gasCalculator.polygon,
+        gasCalculatorAbi,
+        signer
+      )
+
       const weirdPunks = new ethers.Contract(
-        contract,
+        weirdPunksAddress.polygon,
         weirdPunksLayer2Abi,
         signer
       )
 
-      if (mainnetProvider && weirdPunks) {
-        const currEthGas = await (
-          await mainnetProvider.getGasPrice()
-        ).toString()
-        console.log(currEthGas, 'Current ETH Gas')
-        const oracleEthGas = await weirdPunks.gasETH()
-        console.log(oracleEthGas, 'Oracle ETH Gas')
+      if (mainnetProvider && gas && weirdPunks) {
+        const oracleEthGas = await gas.gasETH()
+        const contractGas = oracleEthGas.toString()
 
-        const ethGas = currEthGas > oracleEthGas ? currEthGas : oracleEthGas
-
-        console.log(ethGas, 'ETH Gas')
-        // const txn = wpL2.batchBridge(bridgeIds, gas)
-        // setBridgeTx(txn.hash)
-        // await txn.wait()
+        const ethGas = wethEstimate > contractGas ? wethEstimate : contractGas
+        const txn = weirdPunks.batchBridge(bridgeIds, ethGas)
+        setBridgeTx(txn.hash)
+        await txn.wait()
       }
 
       setBridging(false)
@@ -288,7 +298,6 @@ const Bridge = () => {
   ) : (
     <Box>
       <Text>{welcome}</Text>
-      <Button onClick={() => getMainnetGasFee()}>Gas Check</Button>
 
       {weirdPunksLayer2 && weirdPunksLayer2.length === 0 && bridgeTx !== '' && (
         <Alert status='success'>
@@ -429,10 +438,10 @@ const Bridge = () => {
                   onChange={handleIds}
                 />
                 {weirdBridgeFee !== 999999 && (
-                  <Text>Polygon WEIRD Bridge Fee: {weirdBridgeFee}</Text>
+                  <Text>Bridge Fee: {weirdBridgeFee} WEIRD (On Polygon)</Text>
                 )}
-                {wethEstimate !== 0.0 && (
-                  <Text>Polygon WETH Gas Fee: {wethEstimate}</Text>
+                {wethDisplay !== '' && (
+                  <Text>Gas Fee: {wethDisplay} ETH (On Polygon)</Text>
                 )}
                 <Button onClick={handleBridge} disabled={!wethApproved}>
                   Bridge

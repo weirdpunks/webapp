@@ -28,3 +28,6 @@ export const openSea = {
   rinkeby: '0x88B48F654c30e99bc2e4A1559b4Dcf1aD93FA656',
   mumbai: '0x2953399124F0cBB46d2CbACD8A89cF0599974963'
 }
+export const gasCalculator = {
+  polygon: '0xaf01cfc75a781ac3ab7b8562d0946b15b1fd1124'
+}
