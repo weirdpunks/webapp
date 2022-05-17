@@ -18,7 +18,7 @@ import {
   polygon as polygonMapping,
   rinkeby as rinkebyMapping
 } from '@/utils/mappings'
-import { providerOptions, polygonProviderOptions } from '@/utils/wallet'
+import { providerOptions } from '@/utils/wallet'
 import { useColorMode } from '@chakra-ui/react'
 import axios from 'axios'
 import { BigNumber, ethers } from 'ethers'
@@ -32,16 +32,7 @@ const nftportApi = process.env.NEXT_PUBLIC_NFTPORT_API
 const Wallet = () => {
   const { colorMode } = useColorMode()
   const { state, dispatch } = useApp()
-  const {
-    address,
-    ens,
-    isTestnet,
-    instance,
-    provider,
-    signer,
-    isConnecting,
-    isLayer2
-  } = state
+  const { address, ens, isTestnet, instance, provider, isConnecting } = state
 
   const [web3Modal, setWeb3Modal] = useState<Web3Modal>()
   const [mainnetProvider, setMainnetProvider] =
@@ -106,18 +97,15 @@ const Wallet = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const base = {
+      const options = {
         cacheProvider: true,
-        theme: colorMode === 'dark' ? 'dark' : 'light'
+        theme: colorMode === 'dark' ? 'dark' : 'light',
+        providerOptions
       }
-      const options = isLayer2
-        ? { ...base, polygonProviderOptions }
-        : { ...base, providerOptions }
       const modal = new Web3Modal(options)
-
       setWeb3Modal(modal)
     }
-  }, [colorMode, isLayer2])
+  }, [colorMode])
 
   const connect = useCallback(async () => {
     const instance = await web3Modal?.connect()
