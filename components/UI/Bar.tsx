@@ -21,8 +21,8 @@ const Links = [
   { slug: '/', title: 'HOME' },
   { slug: '/dao', title: 'DAO' },
   { slug: '/gold', title: 'GOLD' },
-  { slug: '/migrate', title: 'MIGRATE' }
-  // { slug: '/tokens', title: 'TOKENS' },
+  { slug: '/migrate', title: 'MIGRATE' },
+  { slug: '/tokens', title: 'TOKENS' }
 ]
 
 const Bar = () => {

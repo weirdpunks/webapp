@@ -27,7 +27,12 @@ const Claim = () => {
       setIsClaiming(true)
       const contract = isTestnet ? weirdClaim.mumbai : weirdClaim.polygon
       const claim = new ethers.Contract(contract, claimAbi, signer)
-      const transaction = await claim.claim()
+      const gas = await claim.estimateGas.claim()
+      const gasFormat = ethers.utils.formatUnits(gas, 'wei')
+      var overrideOptions = {
+        gasLimit: gasFormat
+      }
+      const transaction = await claim.claim(overrideOptions)
       setTx(transaction.hash)
       await transaction.wait()
       setIsClaiming(false)
