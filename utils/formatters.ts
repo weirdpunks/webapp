@@ -41,3 +41,8 @@ export const getEllipsisTxt = (str = '', n = 6) => {
 //  */
 // export const tokenValueTxt = (value, decimals, symbol) =>
 //   `${n4.format(tokenValue(value, decimals))} ${symbol}`
+
+export const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message
+  return String(error)
+}

@@ -4,6 +4,7 @@ import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { updateOpenSeaBalance, useApp } from '@/components/Context'
 import { openSea, weirdPunks as wp } from '@/utils/contracts'
 import { ethereum, mumbai, polygon, rinkeby } from '@/utils/mappings'
+// import { getErrorMessage } from '@/utils/formatters'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import {
   Alert,
@@ -17,7 +18,8 @@ import {
   Icon,
   Link,
   Stack,
-  Text
+  Text,
+  useToast
 } from '@chakra-ui/react'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
@@ -29,6 +31,7 @@ interface Mapping {
 }
 
 const OpenSeaMigration = () => {
+  // const toast = useToast()
   const { state, dispatch } = useApp()
   const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
 
@@ -45,7 +48,20 @@ const OpenSeaMigration = () => {
   const [blockExplorer, setBlockExplorer] = useState('')
   const [permissionTx, setPermissionTx] = useState('')
   const [migrateTx, setMigrateTx] = useState('')
-  const [error, setError] = useState('')
+  // const [error, setError] = useState('')
+
+  // useEffect(() => {
+  //   if (error !== '') {
+  //     toast({
+  //       title: "Something's not right.",
+  //       description: error,
+  //       status: 'error',
+  //       duration: 9000,
+  //       isClosable: true
+  //     })
+  //     setError('')
+  //   }
+  // }, [error, toast])
 
   useEffect(() => {
     const checkOSApproval = async () => {
@@ -124,6 +140,10 @@ const OpenSeaMigration = () => {
       await transaction.wait()
       setCheckApproval(true)
     } catch (_e) {
+      // const msg = getErrorMessage(e)
+      // if (msg !== '') {
+      //   setError(msg)
+      // }
       setChangingApproval(false)
     }
   }
@@ -133,15 +153,23 @@ const OpenSeaMigration = () => {
       setMigrating(true)
       const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
+      const gas = await wp.estimateGas.burnAndMint(address, weirdPunks)
+      const gasFormat = ethers.utils.formatUnits(gas, 'wei')
+      var overrideOptions = {
+        gasLimit: gasFormat
+      }
       const transaction = await wp.burnAndMint(
         address,
-        weirdPunks?.slice(0, 200)
+        weirdPunks,
+        overrideOptions
       )
       setMigrateTx(transaction.hash)
       await transaction.wait()
       await updateOSBalance()
       setMigrating(false)
     } catch (_e) {
+      // const msg = getErrorMessage(e)
+      // setError(JSON.stringify(msg))
       setMigrating(false)
     }
   }
