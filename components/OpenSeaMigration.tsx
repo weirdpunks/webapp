@@ -4,7 +4,6 @@ import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
 import { updateOpenSeaBalance, useApp } from '@/components/Context'
 import { openSea, weirdPunks as wp } from '@/utils/contracts'
 import { ethereum, mumbai, polygon, rinkeby } from '@/utils/mappings'
-// import { getErrorMessage } from '@/utils/formatters'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import {
   Alert,
@@ -30,8 +29,12 @@ interface Mapping {
   osid: string
 }
 
+interface ErrorMessage {
+  message: string
+}
+
 const OpenSeaMigration = () => {
-  // const toast = useToast()
+  const toast = useToast()
   const { state, dispatch } = useApp()
   const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
 
@@ -48,20 +51,20 @@ const OpenSeaMigration = () => {
   const [blockExplorer, setBlockExplorer] = useState('')
   const [permissionTx, setPermissionTx] = useState('')
   const [migrateTx, setMigrateTx] = useState('')
-  // const [error, setError] = useState('')
+  const [error, setError] = useState('')
 
-  // useEffect(() => {
-  //   if (error !== '') {
-  //     toast({
-  //       title: "Something's not right.",
-  //       description: error,
-  //       status: 'error',
-  //       duration: 9000,
-  //       isClosable: true
-  //     })
-  //     setError('')
-  //   }
-  // }, [error, toast])
+  useEffect(() => {
+    if (error !== '') {
+      toast({
+        title: "Something's not right.",
+        description: error,
+        status: 'error',
+        duration: 9000,
+        isClosable: true
+      })
+      setError('')
+    }
+  }, [error, toast])
 
   useEffect(() => {
     const checkOSApproval = async () => {
@@ -139,13 +142,15 @@ const OpenSeaMigration = () => {
       setPermissionTx(transaction.hash)
       await transaction.wait()
       setCheckApproval(true)
-    } catch (_e) {
-      // const msg = getErrorMessage(e)
-      // if (msg !== '') {
-      //   setError(msg)
-      // }
+    } catch (e) {
+      const msg = getErrorMessage(e as ErrorMessage)
+      setError(msg)
       setChangingApproval(false)
     }
+  }
+
+  const getErrorMessage = (error: ErrorMessage) => {
+    return String(error.message)
   }
 
   const handleBurnAndMint = async () => {
@@ -167,9 +172,9 @@ const OpenSeaMigration = () => {
       await transaction.wait()
       await updateOSBalance()
       setMigrating(false)
-    } catch (_e) {
-      // const msg = getErrorMessage(e)
-      // setError(JSON.stringify(msg))
+    } catch (e) {
+      const msg = getErrorMessage(e as ErrorMessage)
+      setError(msg)
       setMigrating(false)
     }
   }
