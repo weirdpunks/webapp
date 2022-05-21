@@ -18,6 +18,7 @@ import {
   Link,
   Stack,
   Text,
+  Textarea,
   useToast
 } from '@chakra-ui/react'
 import { ethers } from 'ethers'
@@ -51,20 +52,21 @@ const OpenSeaMigration = () => {
   const [blockExplorer, setBlockExplorer] = useState('')
   const [permissionTx, setPermissionTx] = useState('')
   const [migrateTx, setMigrateTx] = useState('')
-  const [error, setError] = useState('')
+  const [errorDisplay, setErrorDisplay] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
-    if (error !== '') {
+    if (errorMessage !== '') {
       toast({
         title: "Something's not right.",
-        description: error,
+        description: errorMessage,
         status: 'error',
-        duration: 9000,
+        duration: 4000,
         isClosable: true
       })
-      setError('')
+      setErrorMessage('')
     }
-  }, [error, toast])
+  }, [errorMessage, toast])
 
   useEffect(() => {
     const checkOSApproval = async () => {
@@ -143,8 +145,9 @@ const OpenSeaMigration = () => {
       await transaction.wait()
       setCheckApproval(true)
     } catch (e) {
+      setErrorDisplay(JSON.stringify(e, null, 2))
       const msg = getErrorMessage(e as ErrorMessage)
-      setError(msg)
+      setErrorMessage(msg)
       setChangingApproval(false)
     }
   }
@@ -173,8 +176,9 @@ const OpenSeaMigration = () => {
       await updateOSBalance()
       setMigrating(false)
     } catch (e) {
+      setErrorDisplay(JSON.stringify(e, null, 2))
       const msg = getErrorMessage(e as ErrorMessage)
-      setError(msg)
+      setErrorMessage(msg)
       setMigrating(false)
     }
   }
@@ -283,6 +287,12 @@ const OpenSeaMigration = () => {
             )}
           </Box>
         </>
+      )}
+      {errorDisplay !== '' && (
+        <Box mx={5} my={10}>
+          <Textarea value={errorDisplay} />
+          <Button onClick={() => setErrorDisplay('')}>Clear</Button>
+        </Box>
       )}
     </Box>
   )
