@@ -13,14 +13,50 @@ import {
 } from '@chakra-ui/react'
 import { ethers } from 'ethers'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
 const Claim = () => {
   const { state, dispatch } = useApp()
-  const { unclaimed, isTestnet, isLayer2, signer } = state
+  const {
+    unclaimed,
+    isTestnet,
+    isLayer2,
+    signer,
+    weirdPunksMainnet,
+    weirdPunksLayer2
+  } = state
 
   const [tx, setTx] = useState('')
   const [isClaiming, setIsClaiming] = useState(false)
+  const [initialClaim, setInitialClaim] = useState(false)
+
+  useEffect(() => {
+    const checkPreviousClaim = async () => {
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(
+          `https://polygon-mainnet.infura.io/v3/${infuraId}`
+        )
+        const claim = new ethers.Contract(
+          weirdClaim.polygon,
+          claimAbi,
+          provider
+        )
+        await claim.claimableForIDs(weirdPunksMainnet)
+      } catch (_e) {
+        setInitialClaim(true)
+      }
+    }
+    if (
+      !isTestnet &&
+      weirdPunksLayer2.length === 0 &&
+      weirdPunksMainnet.length > 0
+    ) {
+      // mainnet weird punks only
+      checkPreviousClaim()
+    }
+  }, [weirdPunksLayer2, weirdPunksMainnet, isTestnet])
 
   const handleClaim = async () => {
     try {
@@ -54,7 +90,9 @@ const Claim = () => {
               alt='$WEIRD'
             />
             <Text fontSize={'xl'} fontWeight={600}>
-              {unclaimed} Unclaimed
+              {initialClaim
+                ? 'Please initialize your claim.'
+                : `${unclaimed} Unclaimed`}
             </Text>
           </Stack>
           <Box p={4} m={2} textAlign='center'>
@@ -69,7 +107,9 @@ const Claim = () => {
                 ) : (
                   <Button
                     onClick={handleClaim}
-                    disabled={Boolean(!isTestnet && unclaimed < 1)}>
+                    disabled={Boolean(
+                      !isTestnet && unclaimed < 1 && !initialClaim
+                    )}>
                     Claim
                   </Button>
                 )}
