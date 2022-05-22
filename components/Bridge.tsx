@@ -54,9 +54,8 @@ const Bridge = () => {
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [wethApproved, setWETHApproved] = useState(false)
   const [weirdApproved, setWeirdApproved] = useState(false)
-  const [wethEstimate, setWethEstimate] = useState<ethers.BigNumber>(bigZero)
-  const [contractEstimate, setContractEstimate] =
-    useState<ethers.BigNumber>(bigZero)
+  const [wethEstimate, setWethEstimate] = useState('0')
+  const [contractEstimate, setContractEstimate] = useState('0')
   const [wethDisplay, setWethDisplay] = useState('')
 
   const [mainnetProvider, setMainnetProvider] =
@@ -241,8 +240,7 @@ const Bridge = () => {
             .join(',')
         }
       })
-      const num = ethers.BigNumber.from(res.data)
-      setWethEstimate(num)
+      setWethEstimate(res.data as string)
     } catch (e) {
       console.log(JSON.stringify(e, null, 2))
     }
@@ -271,11 +269,9 @@ const Bridge = () => {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toNumber()
         const numberBridging = bridgeIds.length
-        const contractGasTotal = (
-          contractGas +
-          (numberBridging - 1) * (contractGas / 2.5)
-        ).toFixed(0)
-        setContractEstimate(contractGasTotal)
+        const contractGasTotal =
+          contractGas + (numberBridging - 1) * (contractGas / 2.5)
+        setContractEstimate(contractGasTotal.toFixed(0))
       }
 
       setBridging(false)
@@ -292,9 +288,11 @@ const Bridge = () => {
   }, [ids, getMainnetGasFee, getContractGasFee])
 
   useEffect(() => {
-    if (contractEstimate !== bigZero && wethEstimate !== bigZero) {
+    if (contractEstimate !== '0' && wethEstimate.toString() !== '0') {
       const highest =
-        contractEstimate > wethEstimate ? contractEstimate : wethEstimate
+        contractEstimate > wethEstimate.toString()
+          ? contractEstimate
+          : wethEstimate.toString()
       const str = ethers.utils.formatUnits(highest, 'ether')
       const rounded =
         Math.round((parseFloat(str) + Number.EPSILON) * 10000) / 10000
@@ -365,7 +363,9 @@ const Bridge = () => {
         ).toFixed(0)
 
         const ethGas =
-          wethEstimate > contractGasTotal ? wethEstimate : contractGasTotal
+          wethEstimate.toString() > contractGasTotal
+            ? wethEstimate.toString()
+            : contractGasTotal
         const txn = await weirdPunks.batchBridge(bridgeIds, ethGas)
         setBridgeTx(txn.hash)
         await txn.wait()
