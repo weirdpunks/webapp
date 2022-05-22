@@ -227,7 +227,8 @@ const Bridge = () => {
     : 'Bridge from Polygon to Ethereum'
 
   const handleIds = (e: ChangeEvent<HTMLInputElement>) => {
-    setIds(e.target.value)
+    const newIds = e.target.value.split(', ')
+    setIds(newIds.slice(0, 20).join(', '))
   }
 
   const getMainnetGasFee = useCallback(async () => {
