@@ -227,11 +227,7 @@ const Bridge = () => {
     : 'Bridge from Polygon to Ethereum'
 
   const handleIds = (e: ChangeEvent<HTMLInputElement>) => {
-<<<<<<< Updated upstream
-    const newIds = e.target.value.split(', ')
-=======
     const newIds = e.target.value.split(', ').map((i) => parseInt(i))
->>>>>>> Stashed changes
     setIds(newIds.slice(0, 20).join(', '))
   }
 
