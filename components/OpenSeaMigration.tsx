@@ -176,7 +176,7 @@ const OpenSeaMigration = () => {
         }
         const transaction = await wp.burnAndMint(
           address,
-          weirdPunks?.slice(0, 125),
+          weirdPunks?.slice(0, 149),
           overrideOptions
         )
         setMigrateTx(transaction.hash)
