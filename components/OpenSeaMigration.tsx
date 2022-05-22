@@ -163,11 +163,12 @@ const OpenSeaMigration = () => {
       const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
       const gas = await wp.estimateGas.burnAndMint(address, weirdPunks)
-      const gasFormat = ethers.utils.formatUnits(gas, 'wei')
+      const limitMultiplier = parseInt(gas.toString()) * 3
+      const gasFormat = ethers.utils.formatUnits(limitMultiplier, 'wei')
 
       const currGasPrice = await provider?.getGasPrice()
       if (currGasPrice) {
-        const multiplier = parseInt(currGasPrice.toString()) * 1.5
+        const multiplier = parseInt(currGasPrice.toString()) * 1.1
         const gasPriceFormat = ethers.utils.formatUnits(multiplier, 'wei')
         const overrideOptions = {
           gasLimit: gasFormat,
