@@ -240,6 +240,7 @@ const Bridge = () => {
       )
       setWETHApprovalTx(transaction.hash)
       await transaction.wait()
+      setWETHApproved(true)
       setApprovingWETHToken(false)
     } catch (e) {
       console.log(e)
@@ -254,6 +255,7 @@ const Bridge = () => {
       )
       setWeirdApprovalTx(transaction.hash)
       await transaction.wait()
+      setWeirdApproved(true)
       setApprovingWeirdToken(false)
     } catch (e) {
       console.log(e)
