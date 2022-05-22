@@ -162,21 +162,21 @@ const OpenSeaMigration = () => {
       setMigrating(true)
       const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
-      const gas = await wp.estimateGas.burnAndMint(address, weirdPunks)
-      const limitMultiplier = parseInt(gas.toString()) * 3
-      const gasFormat = ethers.utils.formatUnits(limitMultiplier, 'wei')
-
+      const gas = await wp.estimateGas.burnAndMint(
+        address,
+        weirdPunks?.slice(0, 125)
+      )
+      const gasFormat = ethers.utils.formatUnits(gas, 'wei')
       const currGasPrice = await provider?.getGasPrice()
       if (currGasPrice) {
-        const multiplier = parseInt(currGasPrice.toString()) * 1.1
-        const gasPriceFormat = ethers.utils.formatUnits(multiplier, 'wei')
+        const gasPriceFormat = ethers.utils.formatUnits(currGasPrice, 'wei')
         const overrideOptions = {
           gasLimit: gasFormat,
           gasPrice: gasPriceFormat
         }
         const transaction = await wp.burnAndMint(
           address,
-          weirdPunks,
+          weirdPunks?.slice(0, 125),
           overrideOptions
         )
         setMigrateTx(transaction.hash)
