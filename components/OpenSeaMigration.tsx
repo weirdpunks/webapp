@@ -164,7 +164,7 @@ const OpenSeaMigration = () => {
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
       const gas = await wp.estimateGas.burnAndMint(
         address,
-        weirdPunks?.slice(0, 125)
+        weirdPunks?.slice(0, 149)
       )
       const gasFormat = ethers.utils.formatUnits(gas, 'wei')
       const currGasPrice = await provider?.getGasPrice()
