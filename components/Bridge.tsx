@@ -529,7 +529,7 @@ const Bridge = () => {
                     {weirdPunksLayer2.length > 20
                       ? 20 * weirdBridgeFee
                       : weirdPunksLayer2.length * weirdBridgeFee}
-                    WEIRD (On Polygon)
+                    {' WEIRD (On Polygon)'}
                   </Text>
                 )}
                 {wethDisplay !== '' && (
