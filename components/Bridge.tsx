@@ -264,8 +264,10 @@ const Bridge = () => {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toNumber()
         const numberBridging = bridgeIds.length
-        const contractGasTotal =
-          contractGas + (numberBridging - 1) * (contractGas / 2.5)
+        const contractGasTotal = (
+          contractGas +
+          (numberBridging - 1) * (contractGas / 2.5)
+        ).toFixed(0)
         setContractEstimate(contractGasTotal)
       }
 
@@ -348,8 +350,10 @@ const Bridge = () => {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toNumber()
         const numberBridging = bridgeIds.length
-        const contractGasTotal =
-          contractGas + (numberBridging - 1) * (contractGas / 2.5)
+        const contractGasTotal = (
+          contractGas +
+          (numberBridging - 1) * (contractGas / 2.5)
+        ).toFixed(0)
 
         const ethGas =
           wethEstimate > contractGasTotal ? wethEstimate : contractGasTotal
