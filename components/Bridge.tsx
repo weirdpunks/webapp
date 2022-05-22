@@ -21,7 +21,8 @@ import {
   Input,
   Link,
   Stack,
-  Text
+  Text,
+  useToast
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { FaCheckCircle } from 'react-icons/fa'
@@ -32,7 +33,12 @@ import { useCallback, useEffect, useState, ChangeEvent } from 'react'
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 const gasApiUrl = process.env.NEXT_PUBLIC_GAS_API_URL
 
+interface ErrorMessage {
+  message: string
+}
+
 const Bridge = () => {
+  const toast = useToast()
   const { state } = useApp()
   const { signer, address, isLayer2, isTestnet, weirdPunksLayer2 } = state
 
@@ -47,6 +53,7 @@ const Bridge = () => {
   const [wethApproved, setWETHApproved] = useState(false)
   const [weirdApproved, setWeirdApproved] = useState(false)
   const [wethEstimate, setWethEstimate] = useState(0)
+  const [contractEstimate, setContractEstimate] = useState(0)
   const [wethDisplay, setWethDisplay] = useState('')
 
   const [mainnetProvider, setMainnetProvider] =
@@ -63,6 +70,20 @@ const Bridge = () => {
 
   const [bridgeTx, setBridgeTx] = useState('')
   const [bridging, setBridging] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    if (errorMessage !== '') {
+      toast({
+        title: "Something's not right.",
+        description: errorMessage,
+        status: 'error',
+        duration: 4000,
+        isClosable: true
+      })
+      setErrorMessage('')
+    }
+  }, [errorMessage, toast])
 
   useEffect(() => {
     const loadWeirdPunksContract = async () => {
@@ -215,21 +236,60 @@ const Bridge = () => {
         }
       })
       setWethEstimate(parseInt(res.data as string))
-      const str = parseFloat(
-        ethers.utils.formatUnits(res.data as string, 'ether')
-      )
-      const rounded = Math.round((str + Number.EPSILON) * 10000) / 10000
-      setWethDisplay(rounded.toString())
     } catch (e) {
       console.log(JSON.stringify(e, null, 2))
     }
   }, [ids])
 
+  const getContractGasFee = useCallback(async () => {
+    try {
+      const bridgeIds = ids.split(', ').map((i) => parseInt(i))
+
+      const gas = new ethers.Contract(
+        gasCalculator.polygon,
+        gasCalculatorAbi,
+        signer
+      )
+
+      const weirdPunks = new ethers.Contract(
+        weirdPunksAddress.polygon,
+        weirdPunksLayer2Abi,
+        signer
+      )
+
+      if (mainnetProvider && gas && weirdPunks) {
+        const oracleEthGas = await gas.gasETH()
+        const contractGas = oracleEthGas.toNumber()
+        const numberBridging = bridgeIds.length
+        const contractGasTotal =
+          contractGas + (numberBridging - 1) * (contractGas / 2.5)
+        setContractEstimate(contractGasTotal)
+      }
+
+      setBridging(false)
+    } catch (e) {
+      console.log(e)
+    }
+  }, [ids, mainnetProvider, signer])
+
   useEffect(() => {
     if (ids !== '') {
       getMainnetGasFee()
+      getContractGasFee()
     }
-  }, [ids, getMainnetGasFee])
+  }, [ids, getMainnetGasFee, getContractGasFee])
+
+  useEffect(() => {
+    if (contractEstimate !== 0 && wethEstimate !== 0) {
+      // console.log(contractEstimate, 'contract estimate')
+      // console.log(wethEstimate, 'api estimate')
+      const highest =
+        contractEstimate > wethEstimate ? contractEstimate : wethEstimate
+      const str = parseFloat(ethers.utils.formatUnits(highest, 'ether'))
+      const rounded = Math.round((str + Number.EPSILON) * 10000) / 10000
+      setWethDisplay(rounded.toString())
+    }
+  }, [contractEstimate, wethEstimate])
 
   const handleWETHApprove = async () => {
     try {
@@ -262,6 +322,10 @@ const Bridge = () => {
     }
   }
 
+  const getErrorMessage = (error: ErrorMessage) => {
+    return String(error.message)
+  }
+
   const handleBridge = async () => {
     try {
       setBridging(true)
@@ -282,8 +346,12 @@ const Bridge = () => {
       if (mainnetProvider && gas && weirdPunks) {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toString()
+        const numberBridging = bridgeIds.length
+        const contractGasTotal =
+          contractGas + (numberBridging - 1) * ((contractGas / 25) * 10)
 
-        const ethGas = wethEstimate > contractGas ? wethEstimate : contractGas
+        const ethGas =
+          wethEstimate > contractGasTotal ? wethEstimate : contractGasTotal
         const txn = weirdPunks.batchBridge(bridgeIds, ethGas)
         setBridgeTx(txn.hash)
         await txn.wait()
@@ -291,6 +359,8 @@ const Bridge = () => {
 
       setBridging(false)
     } catch (e) {
+      const msg = getErrorMessage(e as ErrorMessage)
+      setErrorMessage(msg)
       console.log(e)
     }
   }
