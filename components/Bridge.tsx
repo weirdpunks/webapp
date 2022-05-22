@@ -37,6 +37,8 @@ interface ErrorMessage {
   message: string
 }
 
+const bigZero = ethers.BigNumber.from(0)
+
 const Bridge = () => {
   const toast = useToast()
   const { state } = useApp()
@@ -52,8 +54,9 @@ const Bridge = () => {
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [wethApproved, setWETHApproved] = useState(false)
   const [weirdApproved, setWeirdApproved] = useState(false)
-  const [wethEstimate, setWethEstimate] = useState(0)
-  const [contractEstimate, setContractEstimate] = useState(0)
+  const [wethEstimate, setWethEstimate] = useState<ethers.BigNumber>(bigZero)
+  const [contractEstimate, setContractEstimate] =
+    useState<ethers.BigNumber>(bigZero)
   const [wethDisplay, setWethDisplay] = useState('')
 
   const [mainnetProvider, setMainnetProvider] =
@@ -217,7 +220,7 @@ const Bridge = () => {
   }, [isTestnet, isLayer2])
 
   useEffect(() => {
-    setIds(weirdPunksLayer2.join(', '))
+    setIds(weirdPunksLayer2.slice(0, 20).join(', '))
   }, [weirdPunksLayer2])
 
   const welcome = isTestnet
@@ -238,7 +241,8 @@ const Bridge = () => {
             .join(',')
         }
       })
-      setWethEstimate(parseInt(res.data as string))
+      const num = ethers.BigNumber.from(res.data)
+      setWethEstimate(num)
     } catch (e) {
       console.log(JSON.stringify(e, null, 2))
     }
@@ -246,7 +250,10 @@ const Bridge = () => {
 
   const getContractGasFee = useCallback(async () => {
     try {
-      const bridgeIds = ids.split(', ').map((i) => parseInt(i))
+      const bridgeIds = ids
+        .split(', ')
+        .map((i) => parseInt(i))
+        .slice(0, 20)
 
       const gas = new ethers.Contract(
         gasCalculator.polygon,
@@ -285,13 +292,12 @@ const Bridge = () => {
   }, [ids, getMainnetGasFee, getContractGasFee])
 
   useEffect(() => {
-    if (contractEstimate !== 0 && wethEstimate !== 0) {
-      // console.log(contractEstimate, 'contract estimate')
-      // console.log(wethEstimate, 'api estimate')
+    if (contractEstimate !== bigZero && wethEstimate !== bigZero) {
       const highest =
         contractEstimate > wethEstimate ? contractEstimate : wethEstimate
-      const str = parseFloat(ethers.utils.formatUnits(highest, 'ether'))
-      const rounded = Math.round((str + Number.EPSILON) * 10000) / 10000
+      const str = ethers.utils.formatUnits(highest, 'ether')
+      const rounded =
+        Math.round((parseFloat(str) + Number.EPSILON) * 10000) / 10000
       setWethDisplay(rounded.toString())
     }
   }, [contractEstimate, wethEstimate])
@@ -332,7 +338,10 @@ const Bridge = () => {
   const handleBridge = async () => {
     try {
       setBridging(true)
-      const bridgeIds = ids.split(', ').map((i) => parseInt(i))
+      const bridgeIds = ids
+        .split(', ')
+        .map((i) => parseInt(i))
+        .slice(0, 20)
 
       const gas = new ethers.Contract(
         gasCalculator.polygon,
@@ -515,7 +524,13 @@ const Bridge = () => {
                   onChange={handleIds}
                 />
                 {weirdBridgeFee !== 999999 && (
-                  <Text>Bridge Fee: {weirdBridgeFee} WEIRD (On Polygon)</Text>
+                  <Text>
+                    Bridge Fee:{' '}
+                    {weirdPunksLayer2.length > 20
+                      ? 20 * weirdBridgeFee
+                      : weirdPunksLayer2.length * weirdBridgeFee}
+                    WEIRD (On Polygon)
+                  </Text>
                 )}
                 {wethDisplay !== '' && (
                   <Text>Gas Fee: {wethDisplay} ETH (On Polygon)</Text>
