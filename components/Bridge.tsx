@@ -370,6 +370,7 @@ const Bridge = () => {
         const txn = await weirdPunks.batchBridge(bridgeIds, ethGas)
         setBridgeTx(txn.hash)
         await txn.wait()
+        window.location.reload()
       }
 
       setBridging(false)
@@ -508,7 +509,7 @@ const Bridge = () => {
             )}
           </Box>
           <Box mx={5} my={10}>
-            <Text>Step 3. Bridge to Mainnet</Text>
+            <Text>Step 3. Bridge to Mainnet (batches of 20)</Text>
             {bridging ? (
               <>
                 <CircularProgress
