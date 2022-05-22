@@ -21,8 +21,8 @@ import {
   Input,
   Link,
   Stack,
-  Text
-  // useToast
+  Text,
+  useToast
 } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { FaCheckCircle } from 'react-icons/fa'
@@ -38,7 +38,7 @@ interface ErrorMessage {
 }
 
 const Bridge = () => {
-  // const toast = useToast()
+  const toast = useToast()
   const { state } = useApp()
   const { signer, address, isLayer2, isTestnet, weirdPunksLayer2 } = state
 
@@ -70,20 +70,24 @@ const Bridge = () => {
 
   const [bridgeTx, setBridgeTx] = useState('')
   const [bridging, setBridging] = useState(false)
-  // const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  // useEffect(() => {
-  //   if (errorMessage !== '') {
-  //     toast({
-  //       title: "Something's not right.",
-  //       description: errorMessage,
-  //       status: 'error',
-  //       duration: 4000,
-  //       isClosable: true
-  //     })
-  //     setErrorMessage('')
-  //   }
-  // }, [errorMessage, toast])
+  useEffect(() => {
+    if (errorMessage !== '') {
+      toast({
+        title: "Something's not right.",
+        description: errorMessage,
+        status: 'error',
+        duration: 4000,
+        isClosable: true
+      })
+      setErrorMessage('')
+    }
+  }, [errorMessage, toast])
+
+  const getErrorMessage = (error: ErrorMessage) => {
+    return String(error.message)
+  }
 
   useEffect(() => {
     const loadWeirdPunksContract = async () => {
@@ -120,7 +124,6 @@ const Bridge = () => {
         setWeirdBridgeFee(parseInt(ethers.utils.formatUnits(fee, 'ether')))
       } catch (e) {
         console.log(e)
-        // setWeirdBridgeFee(0)
       }
     }
 
@@ -318,13 +321,11 @@ const Bridge = () => {
       setWeirdApproved(true)
       setApprovingWeirdToken(false)
     } catch (e) {
+      const msg = getErrorMessage(e as ErrorMessage)
+      setErrorMessage(msg)
       console.log(e)
     }
   }
-
-  // const getErrorMessage = (error: ErrorMessage) => {
-  //   return String(error.message)
-  // }
 
   const handleBridge = async () => {
     try {
@@ -352,15 +353,15 @@ const Bridge = () => {
 
         const ethGas =
           wethEstimate > contractGasTotal ? wethEstimate : contractGasTotal
-        const txn = weirdPunks.batchBridge(bridgeIds, ethGas)
+        const txn = await weirdPunks.batchBridge(bridgeIds, ethGas)
         setBridgeTx(txn.hash)
         await txn.wait()
       }
 
       setBridging(false)
     } catch (e) {
-      // const msg = getErrorMessage(e as ErrorMessage)
-      // setErrorMessage(msg)
+      const msg = getErrorMessage(e as ErrorMessage)
+      setErrorMessage(msg)
       console.log(e)
     }
   }
