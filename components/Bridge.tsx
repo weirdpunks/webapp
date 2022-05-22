@@ -227,7 +227,11 @@ const Bridge = () => {
     : 'Bridge from Polygon to Ethereum'
 
   const handleIds = (e: ChangeEvent<HTMLInputElement>) => {
+<<<<<<< Updated upstream
     const newIds = e.target.value.split(', ')
+=======
+    const newIds = e.target.value.split(', ').map((i) => parseInt(i))
+>>>>>>> Stashed changes
     setIds(newIds.slice(0, 20).join(', '))
   }
 
@@ -526,10 +530,7 @@ const Bridge = () => {
                 />
                 {weirdBridgeFee !== 999999 && (
                   <Text>
-                    Bridge Fee:{' '}
-                    {weirdPunksLayer2.length > 20
-                      ? 20 * weirdBridgeFee
-                      : weirdPunksLayer2.length * weirdBridgeFee}
+                    Bridge Fee: {ids.split(', ').length * weirdBridgeFee}
                     {' WEIRD (On Polygon)'}
                   </Text>
                 )}
