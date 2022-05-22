@@ -167,7 +167,8 @@ const OpenSeaMigration = () => {
 
       const currGasPrice = await provider?.getGasPrice()
       if (currGasPrice) {
-        const gasPriceFormat = ethers.utils.formatUnits(currGasPrice, 'wei')
+        const multiplier = parseInt(currGasPrice.toString()) * 1.5
+        const gasPriceFormat = ethers.utils.formatUnits(multiplier, 'wei')
         const overrideOptions = {
           gasLimit: gasFormat,
           gasPrice: gasPriceFormat
