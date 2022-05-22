@@ -37,7 +37,8 @@ interface ErrorMessage {
 const OpenSeaMigration = () => {
   const toast = useToast()
   const { state, dispatch } = useApp()
-  const { osMainnet, osLayer2, chainId, signer, address, isLayer2 } = state
+  const { osMainnet, osLayer2, chainId, provider, signer, address, isLayer2 } =
+    state
 
   const [loading, setLoading] = useState(true)
   const [weirdPunks, setWeirdPunks] = useState<number[]>()
@@ -163,18 +164,24 @@ const OpenSeaMigration = () => {
       const wp = new ethers.Contract(weirdPunksContract, abi, signer)
       const gas = await wp.estimateGas.burnAndMint(address, weirdPunks)
       const gasFormat = ethers.utils.formatUnits(gas, 'wei')
-      var overrideOptions = {
-        gasLimit: gasFormat
+
+      const currGasPrice = await provider?.getGasPrice()
+      if (currGasPrice) {
+        const gasPriceFormat = ethers.utils.formatUnits(currGasPrice, 'wei')
+        const overrideOptions = {
+          gasLimit: gasFormat,
+          gasPrice: gasPriceFormat
+        }
+        const transaction = await wp.burnAndMint(
+          address,
+          weirdPunks,
+          overrideOptions
+        )
+        setMigrateTx(transaction.hash)
+        await transaction.wait()
+        await updateOSBalance()
+        setMigrating(false)
       }
-      const transaction = await wp.burnAndMint(
-        address,
-        weirdPunks,
-        overrideOptions
-      )
-      setMigrateTx(transaction.hash)
-      await transaction.wait()
-      await updateOSBalance()
-      setMigrating(false)
     } catch (e) {
       setErrorDisplay(JSON.stringify(e, null, 2))
       const msg = getErrorMessage(e as ErrorMessage)
