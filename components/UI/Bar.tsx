@@ -19,10 +19,11 @@ import Image from 'next/image'
 
 const Links = [
   { slug: '/', title: 'HOME' },
+  { slug: '/tokens', title: 'TOKENS' },
   { slug: '/dao', title: 'DAO' },
   { slug: '/gold', title: 'GOLD' },
   { slug: '/migrate', title: 'MIGRATE' },
-  { slug: '/tokens', title: 'TOKENS' }
+  { slug: '/bridge', title: 'BRIDGE' }
 ]
 
 const Bar = () => {
