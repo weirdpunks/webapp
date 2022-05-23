@@ -199,8 +199,8 @@ const OpenSeaMigration = () => {
       <Stack direction={'row'} align={'center'}>
         <Text fontSize={'xl'} fontWeight={200} p={2}>
           {weirdPunks && weirdPunks.length > 0
-            ? `Open Sea Weird Punk IDs: ${weirdPunks.join(', ')}`
-            : 'No Open Sea Weird Punks found to migrate...'}
+            ? `OpenSea Weird Punk IDs: ${weirdPunks.join(', ')}`
+            : 'No OpenSea Weird Punks found to migrate...'}
         </Text>
       </Stack>
       {weirdPunks && weirdPunks.length === 0 && migrateTx !== '' && (
