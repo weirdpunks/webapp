@@ -310,17 +310,31 @@ const Wallet = () => {
   const getUnclaimedBalance = useCallback(
     async ({
       contract,
-      provider
+      provider,
+      ids
     }: {
       contract: string
       provider: ethers.providers.JsonRpcProvider | undefined
+      ids: number[] | undefined
     }) => {
       try {
+        let layer2Total = 0
+        let mainnetTotal = 0
         const claim = new ethers.Contract(contract, claimAbi, provider)
-        const unclaimed = await claim.claimableForWallet(`${address}`)
-        if (unclaimed) {
-          return Math.floor(parseFloat(ethers.utils.formatUnits(unclaimed, 18)))
+        const l2 = await claim.claimableForWallet(`${address}`)
+        if (l2) {
+          layer2Total = Math.floor(parseFloat(ethers.utils.formatUnits(l2, 18)))
         }
+        if (ids) {
+          const mainnet = await claim.claimableForIDs(ids)
+          if (mainnet) {
+            mainnetTotal = Math.floor(
+              parseFloat(ethers.utils.formatUnits(mainnet, 18))
+            )
+          }
+        }
+        const unclaimed = layer2Total + mainnetTotal
+        return unclaimed
       } catch (_e) {
         return 0
       }
@@ -358,13 +372,15 @@ const Wallet = () => {
       })
       const unclaimed = await getUnclaimedBalance({
         contract: isTestnet ? weirdClaim.mumbai : weirdClaim.polygon,
-        provider: layer2Provider
+        provider: layer2Provider,
+        ids: mainnetWeirdPunks
       })
+
       dispatch(
         setBalances({
           weirdMainnet: mainnetBalance || 0,
           weirdLayer2: layer2Balance || 0,
-          unclaimed: unclaimed || 0,
+          unclaimed: unclaimed,
           weirdPunksMainnet: mainnetWeirdPunks || [],
           weirdPunksLayer2: layer2WeirdPunks || [],
           osMainnet: mainnetOSWeirdPunks || [],
