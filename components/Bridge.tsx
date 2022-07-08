@@ -424,13 +424,7 @@ const Bridge = () => {
         signer
       )
 
-      const weirdPunks = new ethers.Contract(
-        weirdPunksAddress.polygon,
-        weirdPunksLayer2Abi,
-        signer
-      )
-
-      if (mainnetProvider && gas && weirdPunks) {
+      if (mainnetProvider && gas) {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toNumber()
         const numberBridging = bridgeIds.length
@@ -443,10 +437,28 @@ const Bridge = () => {
           wethEstimate.toString() > contractGasTotal
             ? wethEstimate.toString()
             : contractGasTotal
-        const txn = await weirdPunks.batchBridge(bridgeIds, ethGas)
-        setBridgeTx(txn.hash)
-        await txn.wait()
-        window.location.reload()
+
+        if (collection === 'wp') {
+          const weirdPunks = new ethers.Contract(
+            weirdPunksAddress.polygon,
+            weirdPunksLayer2Abi,
+            signer
+          )
+          const txn = await weirdPunks.batchBridge(bridgeIds, ethGas)
+          setBridgeTx(txn.hash)
+          await txn.wait()
+          window.location.reload()
+        } else if (collection === 'ewp') {
+          const expansionWeirdPunks = new ethers.Contract(
+            expansions.polygon,
+            expansionsLayer2Abi,
+            signer
+          )
+          const txn = await expansionWeirdPunks.batchBridge(bridgeIds, ethGas)
+          setBridgeTx(txn.hash)
+          await txn.wait()
+          window.location.reload()
+        }
       }
 
       setBridging(false)
@@ -463,7 +475,7 @@ const Bridge = () => {
 
   return !address ? (
     <Button onClick={() => dispatch(startConnecting())}>
-      Please connect your wallet at the top right
+      Please connect your wallet
     </Button>
   ) : !isLayer2 ? (
     <Text>Please switch to {isTestnet ? 'Mumbai' : 'Polygon'}</Text>
@@ -471,10 +483,8 @@ const Bridge = () => {
     <Box>
       <Box m={20} p={5} backgroundColor={'#efefef'}>
         <Text>{welcome}</Text>
-        <Select onChange={handleCollectionChange}>
-          <option value='wp' selected>
-            Weird Punks
-          </option>
+        <Select onChange={handleCollectionChange} value={collection}>
+          <option value='wp'>Weird Punks</option>
           <option value='ewp'>Expansion Weird Punks</option>
         </Select>
       </Box>
@@ -613,7 +623,11 @@ const Bridge = () => {
             ) : (
               <>
                 <Input
-                  placeholder='Weird Punk IDs (comma separated)'
+                  placeholder={
+                    collection === 'wp'
+                      ? 'Weird Punk IDs (comma separated)'
+                      : 'Expansion Weird Punk IDs (comma separated)'
+                  }
                   value={ids}
                   onChange={handleIds}
                 />
