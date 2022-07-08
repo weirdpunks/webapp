@@ -254,7 +254,7 @@ const Wallet = () => {
   )
 
   const getIdsNFTPort = useCallback(
-    async ({ contract }: { contract: string }) => {
+    async ({ contract, chain }: { contract: string; chain: string }) => {
       try {
         interface NFT {
           token_id: string
@@ -267,7 +267,7 @@ const Wallet = () => {
         const url = `https://api.nftport.xyz/v0/accounts/${address}`
         const res = await axios.get<NFTPORT>(url, {
           params: {
-            chain: isTestnet ? 'rinkeby' : 'ethereum',
+            chain,
             contract_address: contract
           },
           headers: {
@@ -287,7 +287,7 @@ const Wallet = () => {
         return []
       }
     },
-    [address, isTestnet]
+    [address]
   )
 
   const getLayer2WeirdPunks = useCallback(
@@ -390,6 +390,7 @@ const Wallet = () => {
         mapping: isTestnet ? mumbaiMapping : polygonMapping
       })
       const mainnetWeirdPunks = await getIdsNFTPort({
+        chain: isTestnet ? 'rinkeby' : 'ethereum',
         contract: isTestnet ? weirdPunks.rinkeby : weirdPunks.mainnet
       })
       const layer2WeirdPunks = await getLayer2WeirdPunks({
@@ -397,11 +398,12 @@ const Wallet = () => {
         provider: layer2Provider
       })
       const mainnetExpansions = await getIdsNFTPort({
+        chain: 'ethereum',
         contract: expansions.mainnet
       })
-      const layer2Expansions = await getLayer2Expansions({
-        contract: expansions.polygon,
-        provider: layer2Provider
+      const layer2Expansions = await getIdsNFTPort({
+        chain: 'polygon',
+        contract: expansions.polygon
       })
       const unclaimed = await getUnclaimedBalance({
         contract: isTestnet ? weirdClaim.mumbai : weirdClaim.polygon,
