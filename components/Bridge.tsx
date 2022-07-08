@@ -300,16 +300,12 @@ const Bridge = () => {
   }, [isTestnet, isLayer2])
 
   useEffect(() => {
-    let ids = ''
-    switch (collection) {
-      case 'wp':
-        ids = weirdPunksLayer2.slice(0, 20).join(', ')
-        break
-      case 'exp':
-        ids = expansionsLayer2.slice(0, 20).join(', ')
-        break
+    if (collection === 'wp') {
+      setIds(weirdPunksLayer2.slice(0, 20).join(', '))
     }
-    setIds(ids)
+    if (collection === 'ewp') {
+      setIds(expansionsLayer2.slice(0, 20).join(', '))
+    }
   }, [collection, weirdPunksLayer2, expansionsLayer2])
 
   const welcome = isTestnet
