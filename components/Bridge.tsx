@@ -102,8 +102,17 @@ const Bridge = () => {
   useEffect(() => {
     if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
       setCollection('exp')
+    } else {
+      setCollection('wp')
     }
   }, [weirdPunksLayer2, expansionsLayer2])
+
+  useEffect(() => {
+    if (collection === 'wp' || collection === 'ewp') {
+      setWETHApproved(false)
+      setWeirdApproved(false)
+    }
+  }, [collection, weirdPunksLayer2, expansionsLayer2])
 
   useEffect(() => {
     if (errorMessage !== '') {
