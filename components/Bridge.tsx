@@ -8,8 +8,7 @@ import {
   weth,
   weird,
   gasCalculator,
-  weirdPunks,
-  expansions
+  expansions as expansionsAddress
 } from '@/utils/contracts'
 import {
   Alert,
@@ -145,7 +144,7 @@ const Bridge = () => {
   useEffect(() => {
     const loadWeirdPunksContract = async () => {
       const ewpContract = new ethers.Contract(
-        expansions.polygon,
+        expansionsAddress.polygon,
         expansionsLayer2Abi,
         signer
       )
@@ -226,7 +225,7 @@ const Bridge = () => {
     const wethReady = async () => {
       const contract =
         collection === 'ewp'
-          ? expansions.polygon
+          ? expansionsAddress.polygon
           : isTestnet
           ? weirdPunksAddress.mumbai
           : weirdPunksAddress.polygon
@@ -250,7 +249,7 @@ const Bridge = () => {
     const weirdReady = async () => {
       const contract =
         collection === 'ewp'
-          ? expansions.polygon
+          ? expansionsAddress.polygon
           : isTestnet
           ? weirdPunksAddress.mumbai
           : weirdPunksAddress.polygon
@@ -381,7 +380,11 @@ const Bridge = () => {
     try {
       setApprovingWETHToken(true)
       const transaction = await wethContract?.approve(
-        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon,
+        collection === 'ewp'
+          ? expansionsAddress.polygon
+          : isTestnet
+          ? weirdPunksAddress.mumbai
+          : weirdPunksAddress.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
       setWETHApprovalTx(transaction.hash)
@@ -396,7 +399,11 @@ const Bridge = () => {
     try {
       setApprovingWeirdToken(true)
       const transaction = await weirdContract?.approve(
-        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon,
+        collection === 'ewp'
+          ? expansionsAddress.polygon
+          : isTestnet
+          ? weirdPunksAddress.mumbai
+          : weirdPunksAddress.polygon,
         '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
       )
       setWeirdApprovalTx(transaction.hash)
@@ -450,7 +457,7 @@ const Bridge = () => {
           window.location.reload()
         } else if (collection === 'ewp') {
           const expansionWeirdPunks = new ethers.Contract(
-            expansions.polygon,
+            expansionsAddress.polygon,
             expansionsLayer2Abi,
             signer
           )
