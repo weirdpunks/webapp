@@ -3,6 +3,8 @@ import { erc1155abi } from '@/artifacts/erc1155'
 import { erc20abi } from '@/artifacts/erc20'
 import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
 import { weirdPunksMainnetAbi } from '@/artifacts/weirdPunksMainnet'
+import { expansionsLayer2Abi } from '@/artifacts/expansionsLayer2'
+import { expansionsMainnetAbi } from '@/artifacts/expansionsMainnet'
 import {
   reset,
   setAddress,
@@ -11,7 +13,13 @@ import {
   setENS,
   useApp
 } from '@/components/Context'
-import { openSea, weird, weirdClaim, weirdPunks } from '@/utils/contracts'
+import {
+  openSea,
+  weird,
+  weirdClaim,
+  weirdPunks,
+  expansions
+} from '@/utils/contracts'
 import {
   ethereum as ethereumMapping,
   mumbai as mumbaiMapping,
@@ -245,7 +253,7 @@ const Wallet = () => {
     [address]
   )
 
-  const getMainnetWeirdPunks = useCallback(
+  const getIdsNFTPort = useCallback(
     async ({ contract }: { contract: string }) => {
       try {
         interface NFT {
@@ -285,17 +293,36 @@ const Wallet = () => {
   const getLayer2WeirdPunks = useCallback(
     async ({
       contract,
-      provider,
-      isLayer2
+      provider
     }: {
       contract: string
       provider: ethers.providers.JsonRpcProvider | undefined
-      isLayer2: boolean
     }) => {
       try {
-        const abi = isLayer2 ? weirdPunksLayer2Abi : weirdPunksMainnetAbi
-        const wp = new ethers.Contract(contract, abi, provider)
+        const wp = new ethers.Contract(contract, weirdPunksLayer2Abi, provider)
         const res: BigNumber[] = await wp.walletOfOwner(`${address}`)
+        const unsorted: number[] = res.map((i) => i.toNumber())
+        const sorted = unsorted.sort((a, b) => a - b)
+        return sorted
+      } catch (e) {
+        // console.log(JSON.stringify(e, null, 2))
+        return []
+      }
+    },
+    [address]
+  )
+
+  const getLayer2Expansions = useCallback(
+    async ({
+      contract,
+      provider
+    }: {
+      contract: string
+      provider: ethers.providers.JsonRpcProvider | undefined
+    }) => {
+      try {
+        const ewp = new ethers.Contract(contract, expansionsLayer2Abi, provider)
+        const res: BigNumber[] = await ewp.walletOfOwner(`${address}`)
         const unsorted: number[] = res.map((i) => i.toNumber())
         const sorted = unsorted.sort((a, b) => a - b)
         return sorted
@@ -362,13 +389,19 @@ const Wallet = () => {
         provider: layer2Provider,
         mapping: isTestnet ? mumbaiMapping : polygonMapping
       })
-      const mainnetWeirdPunks = await getMainnetWeirdPunks({
+      const mainnetWeirdPunks = await getIdsNFTPort({
         contract: isTestnet ? weirdPunks.rinkeby : weirdPunks.mainnet
       })
       const layer2WeirdPunks = await getLayer2WeirdPunks({
         contract: isTestnet ? weirdPunks.mumbai : weirdPunks.polygon,
-        provider: layer2Provider,
-        isLayer2: false
+        provider: layer2Provider
+      })
+      const mainnetExpansions = await getIdsNFTPort({
+        contract: expansions.mainnet
+      })
+      const layer2Expansions = await getLayer2Expansions({
+        contract: expansions.polygon,
+        provider: layer2Provider
       })
       const unclaimed = await getUnclaimedBalance({
         contract: isTestnet ? weirdClaim.mumbai : weirdClaim.polygon,
@@ -383,6 +416,8 @@ const Wallet = () => {
           unclaimed: unclaimed,
           weirdPunksMainnet: mainnetWeirdPunks || [],
           weirdPunksLayer2: layer2WeirdPunks || [],
+          expansionsMainnet: mainnetExpansions || [],
+          expansionsLayer2: layer2Expansions || [],
           osMainnet: mainnetOSWeirdPunks || [],
           osLayer2: layer2OSWeirdPunks || []
         })
@@ -410,7 +445,8 @@ const Wallet = () => {
     getERC20Balance,
     getERC1155BalanceOfBatch,
     getLayer2WeirdPunks,
-    getMainnetWeirdPunks,
+    getIdsNFTPort,
+    getLayer2Expansions,
     getUnclaimedBalance
   ])
 

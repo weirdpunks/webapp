@@ -49,6 +49,8 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         osLayer2: [],
         weirdPunksMainnet: [],
         weirdPunksLayer2: [],
+        expansionsMainnet: [],
+        expansionsLayer2: [],
         isLoadingBalances: true
       }
     case ActionType.SetENS:
@@ -64,6 +66,8 @@ export const appReducer = (state: AppState, action: AppActions): AppState => {
         unclaimed: action.payload.unclaimed,
         weirdPunksMainnet: action.payload.weirdPunksMainnet,
         weirdPunksLayer2: action.payload.weirdPunksLayer2,
+        expansionsMainnet: action.payload.expansionsMainnet,
+        expansionsLayer2: action.payload.expansionsLayer2,
         osMainnet: action.payload.osMainnet,
         osLayer2: action.payload.osLayer2,
         isLoadingBalances: false
@@ -149,6 +153,8 @@ export const setBalances = ({
   unclaimed,
   weirdPunksMainnet,
   weirdPunksLayer2,
+  expansionsMainnet,
+  expansionsLayer2,
   osMainnet,
   osLayer2
 }: {
@@ -157,6 +163,8 @@ export const setBalances = ({
   unclaimed: number
   weirdPunksMainnet: number[]
   weirdPunksLayer2: number[]
+  expansionsMainnet: number[]
+  expansionsLayer2: number[]
   osMainnet: number[]
   osLayer2: number[]
 }): SetBalances => ({
@@ -167,6 +175,8 @@ export const setBalances = ({
     unclaimed,
     weirdPunksMainnet,
     weirdPunksLayer2,
+    expansionsMainnet,
+    expansionsLayer2,
     osMainnet,
     osLayer2
   }

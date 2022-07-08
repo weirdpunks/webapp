@@ -56,6 +56,8 @@ export interface SetBalances {
     unclaimed: number
     weirdPunksMainnet: number[]
     weirdPunksLayer2: number[]
+    expansionsMainnet: number[]
+    expansionsLayer2: number[]
     osMainnet: number[]
     osLayer2: number[]
   }

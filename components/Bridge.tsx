@@ -1,12 +1,15 @@
 import { weirdPunksLayer2Abi } from '@/artifacts/weirdPunksLayer2'
+import { expansionsLayer2Abi } from '@/artifacts/expansionsLayer2'
 import { gasCalculatorAbi } from '@/artifacts/gasCalculator'
 import { erc20abi } from '@/artifacts/erc20'
-import { useApp } from '@/components/Context'
+import { useApp, startConnecting } from '@/components/Context'
 import {
   weirdPunks as weirdPunksAddress,
   weth,
   weird,
-  gasCalculator
+  gasCalculator,
+  weirdPunks,
+  expansions
 } from '@/utils/contracts'
 import {
   Alert,
@@ -20,6 +23,7 @@ import {
   Icon,
   Input,
   Link,
+  Select,
   Stack,
   Text,
   useToast
@@ -41,13 +45,22 @@ const bigZero = ethers.BigNumber.from(0)
 
 const Bridge = () => {
   const toast = useToast()
-  const { state } = useApp()
-  const { signer, address, isLayer2, isTestnet, weirdPunksLayer2 } = state
+  const { state, dispatch } = useApp()
+  const {
+    signer,
+    address,
+    isLayer2,
+    isTestnet,
+    weirdPunksLayer2,
+    expansionsLayer2
+  } = state
 
   const [loading, setLoading] = useState(true)
   const [ids, setIds] = useState('')
 
   const [weirdPunksContract, setWeirdPunksContract] =
+    useState<ethers.Contract>()
+  const [expansionsContract, setExpansionsContract] =
     useState<ethers.Contract>()
   const [wethContract, setWETHContract] = useState<ethers.Contract>()
   const [weirdBridgeFee, setWeirdBridgeFee] = useState(999999)
@@ -70,9 +83,28 @@ const Bridge = () => {
   const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
   const [checkingWeirdApproval, setCheckingWeirdApproval] = useState(false)
 
+  const [collection, setCollection] = useState('wp')
   const [bridgeTx, setBridgeTx] = useState('')
   const [bridging, setBridging] = useState(false)
+  const [bridgeComplete, setBridgeComplete] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    if (bridgeTx !== '') {
+      if (
+        (collection === 'wp' && weirdPunksLayer2.length === 0) ||
+        (collection === 'ewp' && expansionsLayer2.length === 0)
+      ) {
+        setBridgeComplete(true)
+      }
+    }
+  }, [collection, bridgeTx, weirdPunksLayer2, expansionsLayer2])
+
+  useEffect(() => {
+    if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
+      setCollection('exp')
+    }
+  }, [weirdPunksLayer2, expansionsLayer2])
 
   useEffect(() => {
     if (errorMessage !== '') {
@@ -100,10 +132,34 @@ const Bridge = () => {
       )
       setWeirdPunksContract(wpContract)
     }
-    if (isLayer2 && address !== '' && weirdPunksContract === undefined) {
+    if (
+      isLayer2 &&
+      address !== '' &&
+      collection === 'wp' &&
+      weirdPunksContract === undefined
+    ) {
       loadWeirdPunksContract()
     }
-  }, [isLayer2, isTestnet, weirdPunksContract, address, signer])
+  }, [isLayer2, isTestnet, weirdPunksContract, address, signer, collection])
+
+  useEffect(() => {
+    const loadWeirdPunksContract = async () => {
+      const ewpContract = new ethers.Contract(
+        expansions.polygon,
+        expansionsLayer2Abi,
+        signer
+      )
+      setWeirdPunksContract(ewpContract)
+    }
+    if (
+      isLayer2 &&
+      address !== '' &&
+      collection === 'ewp' &&
+      expansionsContract === undefined
+    ) {
+      loadWeirdPunksContract()
+    }
+  }, [isLayer2, isTestnet, expansionsContract, address, signer, collection])
 
   useEffect(() => {
     const loadWETHContract = async () => {
@@ -129,10 +185,21 @@ const Bridge = () => {
       }
     }
 
-    if (weirdPunksContract !== undefined) {
-      wpReady()
+    const ewpReady = async () => {
+      try {
+        const fee = await expansionsContract?.WEIRD_BRIDGE_FEE()
+        setWeirdBridgeFee(parseInt(ethers.utils.formatUnits(fee, 'ether')))
+      } catch (e) {
+        console.log(e)
+      }
     }
-  }, [weirdPunksContract])
+
+    if (collection === 'wp' && weirdPunksContract !== undefined) {
+      wpReady()
+    } else if (collection === 'exp' && expansionsContract !== undefined) {
+      ewpReady()
+    }
+  }, [collection, weirdPunksContract, expansionsContract])
 
   useEffect(() => {
     const loadWeirdContract = async () => {
@@ -157,10 +224,13 @@ const Bridge = () => {
 
   useEffect(() => {
     const wethReady = async () => {
-      const isWETHApproved = await wethContract?.allowance(
-        address,
-        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon
-      )
+      const contract =
+        collection === 'ewp'
+          ? expansions.polygon
+          : isTestnet
+          ? weirdPunksAddress.mumbai
+          : weirdPunksAddress.polygon
+      const isWETHApproved = await wethContract?.allowance(address, contract)
       if (
         isWETHApproved &&
         isWETHApproved._hex ===
@@ -174,14 +244,17 @@ const Bridge = () => {
     if (address !== '' && wethContract !== undefined) {
       wethReady()
     }
-  }, [wethContract, isTestnet, address])
+  }, [wethContract, isTestnet, address, collection])
 
   useEffect(() => {
     const weirdReady = async () => {
-      const isWeirdApproved = await weirdContract?.allowance(
-        address,
-        isTestnet ? weirdPunksAddress.mumbai : weirdPunksAddress.polygon
-      )
+      const contract =
+        collection === 'ewp'
+          ? expansions.polygon
+          : isTestnet
+          ? weirdPunksAddress.mumbai
+          : weirdPunksAddress.polygon
+      const isWeirdApproved = await weirdContract?.allowance(address, contract)
       if (
         isWeirdApproved &&
         isWeirdApproved._hex ===
@@ -195,7 +268,7 @@ const Bridge = () => {
     if (address !== '' && weirdContract !== undefined) {
       weirdReady()
     }
-  }, [weirdContract, isTestnet, address])
+  }, [weirdContract, isTestnet, address, collection])
 
   useEffect(() => {
     const init = () => {
@@ -219,8 +292,17 @@ const Bridge = () => {
   }, [isTestnet, isLayer2])
 
   useEffect(() => {
-    setIds(weirdPunksLayer2.slice(0, 20).join(', '))
-  }, [weirdPunksLayer2])
+    let ids = ''
+    switch (collection) {
+      case 'wp':
+        ids = weirdPunksLayer2.slice(0, 20).join(', ')
+        break
+      case 'exp':
+        ids = expansionsLayer2.slice(0, 20).join(', ')
+        break
+    }
+    setIds(ids)
+  }, [collection, weirdPunksLayer2, expansionsLayer2])
 
   const welcome = isTestnet
     ? 'Bridge from Mumbai to Rinkeby'
@@ -260,13 +342,7 @@ const Bridge = () => {
         signer
       )
 
-      const weirdPunks = new ethers.Contract(
-        weirdPunksAddress.polygon,
-        weirdPunksLayer2Abi,
-        signer
-      )
-
-      if (mainnetProvider && gas && weirdPunks) {
+      if (mainnetProvider && gas) {
         const oracleEthGas = await gas.gasETH()
         const contractGas = oracleEthGas.toNumber()
         const numberBridging = bridgeIds.length
@@ -381,13 +457,29 @@ const Bridge = () => {
     }
   }
 
-  return !isLayer2 ? (
+  const handleCollectionChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setCollection(e.target.value)
+  }
+
+  return !address ? (
+    <Button onClick={() => dispatch(startConnecting())}>
+      Please connect your wallet at the top right
+    </Button>
+  ) : !isLayer2 ? (
     <Text>Please switch to {isTestnet ? 'Mumbai' : 'Polygon'}</Text>
   ) : (
     <Box>
-      <Text>{welcome}</Text>
+      <Box m={20} p={5} backgroundColor={'#efefef'}>
+        <Text>{welcome}</Text>
+        <Select onChange={handleCollectionChange}>
+          <option value='wp' selected>
+            Weird Punks
+          </option>
+          <option value='ewp'>Expansion Weird Punks</option>
+        </Select>
+      </Box>
 
-      {weirdPunksLayer2 && weirdPunksLayer2.length === 0 && bridgeTx !== '' && (
+      {bridgeComplete && (
         <Alert status='success'>
           <AlertIcon />
           <Box flex={1}>
@@ -402,7 +494,7 @@ const Bridge = () => {
         </Alert>
       )}
 
-      {weirdPunksLayer2 && weirdPunksLayer2.length > 0 && (
+      {!bridgeComplete && (
         <>
           <Box>
             <Text>

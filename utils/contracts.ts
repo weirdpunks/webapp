@@ -22,6 +22,11 @@ export const weirdPunks = {
   rinkeby: '0xfdd23649cA6ECa7778f19DefEf1dBEF3c23030aF'
 }
 
+export const expansions = {
+  mainnet: '0x192e09b86c0bd05e8ccb9665065c9d5d58b6fc89',
+  polygon: '0x4571038f92f02bd812fa05eb6260483a7614a05d'
+}
+
 export const openSea = {
   mainnet: '0x495f947276749Ce646f68AC8c248420045cb7b5e',
   polygon: '0x2953399124F0cBB46d2CbACD8A89cF0599974963',
