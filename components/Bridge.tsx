@@ -99,13 +99,13 @@ const Bridge = () => {
     }
   }, [collection, bridgeTx, weirdPunksLayer2, expansionsLayer2])
 
-  useEffect(() => {
-    if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
-      setCollection('exp')
-    } else {
-      setCollection('wp')
-    }
-  }, [weirdPunksLayer2, expansionsLayer2])
+  // useEffect(() => {
+  //   if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
+  //     setCollection('exp')
+  //   } else {
+  //     setCollection('wp')
+  //   }
+  // }, [weirdPunksLayer2, expansionsLayer2])
 
   useEffect(() => {
     if (collection === 'wp' || collection === 'ewp') {
