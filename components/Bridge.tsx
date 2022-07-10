@@ -40,8 +40,6 @@ interface ErrorMessage {
   message: string
 }
 
-const bigZero = ethers.BigNumber.from(0)
-
 const Bridge = () => {
   const toast = useToast()
   const { state, dispatch } = useApp()
@@ -99,13 +97,13 @@ const Bridge = () => {
     }
   }, [collection, bridgeTx, weirdPunksLayer2, expansionsLayer2])
 
-  // useEffect(() => {
-  //   if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
-  //     setCollection('exp')
-  //   } else {
-  //     setCollection('wp')
-  //   }
-  // }, [weirdPunksLayer2, expansionsLayer2])
+  useEffect(() => {
+    if (weirdPunksLayer2.length === 0 && expansionsLayer2.length > 0) {
+      setCollection('exp')
+    } else {
+      setCollection('wp')
+    }
+  }, [weirdPunksLayer2, expansionsLayer2])
 
   useEffect(() => {
     if (collection === 'wp' || collection === 'ewp') {
@@ -151,13 +149,13 @@ const Bridge = () => {
   }, [isLayer2, isTestnet, weirdPunksContract, address, signer, collection])
 
   useEffect(() => {
-    const loadWeirdPunksContract = async () => {
+    const loadExpansionsContract = async () => {
       const ewpContract = new ethers.Contract(
         expansionsAddress.polygon,
         expansionsLayer2Abi,
         signer
       )
-      setWeirdPunksContract(ewpContract)
+      setExpansionsContract(ewpContract)
     }
     if (
       isLayer2 &&
@@ -165,7 +163,7 @@ const Bridge = () => {
       collection === 'ewp' &&
       expansionsContract === undefined
     ) {
-      loadWeirdPunksContract()
+      loadExpansionsContract()
     }
   }, [isLayer2, isTestnet, expansionsContract, address, signer, collection])
 
