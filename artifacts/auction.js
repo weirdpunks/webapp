@@ -3,7 +3,12 @@ export const auctionAbi = [
     inputs: [
       { internalType: 'address', name: '_auctionStarter', type: 'address' },
       { internalType: 'address', name: '_EWP', type: 'address' },
-      { internalType: 'address', name: '_WeirdToken', type: 'address' }
+      { internalType: 'address', name: '_WeirdToken', type: 'address' },
+      {
+        internalType: 'address',
+        name: '_overrideFinalizeAddress',
+        type: 'address'
+      }
     ],
     stateMutability: 'nonpayable',
     type: 'constructor'
@@ -57,7 +62,7 @@ export const auctionAbi = [
   },
   {
     inputs: [
-      { internalType: 'uint256[]', name: 'ids', type: 'uint256[]' },
+      { internalType: 'uint256[]', name: 'tokenIds', type: 'uint256[]' },
       { internalType: 'uint256[]', name: 'startTimestamps', type: 'uint256[]' },
       { internalType: 'uint256[]', name: 'endTimestamps', type: 'uint256[]' },
       { internalType: 'uint256[]', name: 'minPrices', type: 'uint256[]' }
@@ -69,7 +74,7 @@ export const auctionAbi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'id', type: 'uint256' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
       { internalType: 'uint256', name: 'amount', type: 'uint256' }
     ],
     name: 'bid',
@@ -78,7 +83,7 @@ export const auctionAbi = [
     type: 'function'
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'id', type: 'uint256' }],
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
     name: 'cancelAuction',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -99,7 +104,14 @@ export const auctionAbi = [
     type: 'function'
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'id', type: 'uint256' }],
+    inputs: [],
+    name: 'finalCooldown',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
     name: 'finalize',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -107,7 +119,7 @@ export const auctionAbi = [
   },
   {
     inputs: [],
-    name: 'getAllAuctions',
+    name: 'getAllLiveAuctions',
     outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
     stateMutability: 'view',
     type: 'function'
@@ -126,8 +138,22 @@ export const auctionAbi = [
   },
   {
     inputs: [],
+    name: 'overrideFinalizeAddress',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
     name: 'owner',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'previousAuctions',
+    outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
     stateMutability: 'view',
     type: 'function'
   },
@@ -148,8 +174,15 @@ export const auctionAbi = [
     type: 'function'
   },
   {
+    inputs: [{ internalType: 'uint256', name: 'time', type: 'uint256' }],
+    name: 'setFinalCooldown',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
     inputs: [
-      { internalType: 'uint256', name: 'id', type: 'uint256' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
       { internalType: 'uint256', name: 'startTimestamp', type: 'uint256' },
       { internalType: 'uint256', name: 'endTimestamp', type: 'uint256' },
       { internalType: 'uint256', name: 'minPrice', type: 'uint256' }
@@ -157,6 +190,13 @@ export const auctionAbi = [
     name: 'startAuction',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'startPrice',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
     type: 'function'
   },
   {
@@ -181,10 +221,24 @@ export const auctionAbi = [
     type: 'function'
   },
   {
+    inputs: [],
+    name: 'totalLiveAuctions',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
     inputs: [{ internalType: 'address', name: 'newOwner', type: 'address' }],
     name: 'transferOwnership',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'upcomingAuctions',
+    outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+    stateMutability: 'view',
     type: 'function'
   }
 ]

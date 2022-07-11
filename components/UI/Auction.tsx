@@ -33,7 +33,6 @@ import React, { useState, useEffect, useCallback } from 'react'
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
 
 interface AuctionInfo {
-  id: number
   expansionId: number
   start: number
   end: number
@@ -50,25 +49,23 @@ const Auction = () => {
   const [auctionContract, setAuctionContract] = useState<ethers.Contract>()
   const [openAuctions, setOpenAuctions] = useState<AuctionInfo[]>([])
   const [auctionId, setAuctionId] = useState<number | null>(null)
-  const [expansionId, setExpansionId] = useState(1002)
-  const [startTimestamp, setStartTimestamp] = useState(1657499392)
-  const [endTimestamp, setEndTimestamp] = useState(1657586152)
-  const [price, setPrice] = useState(1)
-  const [minBid, setMinBid] = useState(2)
-  const [bid, setBid] = useState(2)
+  const [expansionId, setExpansionId] = useState(0)
+  const [startTimestamp, setStartTimestamp] = useState(0)
+  const [endTimestamp, setEndTimestamp] = useState(0)
+  const [price, setPrice] = useState(0)
+  const [minBid, setMinBid] = useState(0)
+  const [bid, setBid] = useState(0)
 
   useEffect(() => {
     const getAuctions = async () => {
       const contract = new ethers.Contract(auction.polygon, auctionAbi, signer)
-      const allAuctions = await contract.getAllAuctions()
+      const allAuctions = await contract.getAllLiveAuctions()
       const auctions = []
       for (let i = 0; i < allAuctions.length; i++) {
-        const auctionId = allAuctions[i]
-        const expansionId = await contract.auctionId(auctionId)
+        const expansionId = allAuctions[i].toNumber()
         const start = await contract.timestampStarted(expansionId)
-        const end = await contract.timestamptEnded(expansionId)
+        const end = await contract.timestampFinished(expansionId)
         auctions.push({
-          id: auctionId,
           expansionId,
           start,
           end
@@ -76,7 +73,6 @@ const Auction = () => {
       }
       if (auctions.length) {
         setOpenAuctions(auctions)
-        setAuctionId(auctions[0].id)
         setExpansionId(auctions[0].expansionId)
         setStartTimestamp(auctions[0].start)
         setEndTimestamp(auctions[0].end)
