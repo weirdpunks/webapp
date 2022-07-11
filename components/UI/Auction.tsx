@@ -36,6 +36,7 @@ interface AuctionInfo {
   expansionId: number
   start: number
   end: number
+  startPrice: number
 }
 
 const Auction = () => {
@@ -52,6 +53,7 @@ const Auction = () => {
   const [expansionId, setExpansionId] = useState(0)
   const [startTimestamp, setStartTimestamp] = useState(0)
   const [endTimestamp, setEndTimestamp] = useState(0)
+  const [startPrice, setStartPrice] = useState(0)
   const [price, setPrice] = useState(0)
   const [minBid, setMinBid] = useState(0)
   const [bid, setBid] = useState(0)
@@ -65,10 +67,13 @@ const Auction = () => {
         const expansionId = allAuctions[i].toNumber()
         const start = await contract.timestampStarted(expansionId)
         const end = await contract.timestampFinished(expansionId)
+        const startPriceBig = await contract.startPrice(expansionId)
+        const startPrice = parseInt(ethers.utils.formatEther(startPriceBig))
         auctions.push({
           expansionId,
           start,
-          end
+          end,
+          startPrice
         })
       }
       if (auctions.length) {
@@ -76,6 +81,9 @@ const Auction = () => {
         setExpansionId(auctions[0].expansionId)
         setStartTimestamp(auctions[0].start)
         setEndTimestamp(auctions[0].end)
+        setStartPrice(auctions[0].startPrice)
+        setMinBid(auctions[0].startPrice)
+        setBid(auctions[0].startPrice)
       }
       setIsLoading(false)
       setAuctionContract(contract)
@@ -252,7 +260,14 @@ const Auction = () => {
                       )}
                     </Box>
                     <Box p={2} textAlign={'center'} mx={'auto'}>
-                      <Text>Highest Bid: {price} WEIRD</Text>
+                      <>
+                        {startPrice <= price && (
+                          <Text>Highest Bid: {price} WEIRD</Text>
+                        )}
+                        {startPrice > price && (
+                          <Text>Starting Price: {startPrice} WEIRD</Text>
+                        )}
+                      </>
                       <NumberInput
                         min={minBid}
                         isDisabled={!weirdApproved}
