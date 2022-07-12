@@ -47,6 +47,7 @@ const Auction = () => {
   const [weirdApproved, setWeirdApproved] = useState(false)
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
+  const [bidTx, setBidTx] = useState('')
   const [auctionContract, setAuctionContract] = useState<ethers.Contract>()
   const [openAuctions, setOpenAuctions] = useState<AuctionInfo[]>([])
   const [auctionId, setAuctionId] = useState<number | null>(null)
@@ -170,9 +171,12 @@ const Auction = () => {
   const handleBid = async () => {
     try {
       const transaction = await auctionContract?.bid(
+        expansionId,
         ethers.utils.parseEther(`${bid}`)
       )
+      setBidTx(transaction.hash)
       await transaction.wait()
+      getLatestPrice()
     } catch (e) {
       console.log(e)
     }
@@ -289,6 +293,15 @@ const Auction = () => {
                         disabled={!weirdApproved || bid < price + 1}>
                         Place Bid
                       </Button>
+                      {bidTx !== '' && (
+                        <Box p={4}>
+                          <Link
+                            href={`https://polygonscan.com/tx/${bidTx}`}
+                            isExternal={true}>
+                            View transaction <ExternalLinkIcon mx='2px' />
+                          </Link>
+                        </Box>
+                      )}
                     </Box>
                   </Box>
                 </SimpleGrid>
