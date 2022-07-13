@@ -19,6 +19,7 @@ import Image from 'next/image'
 
 const Links = [
   { slug: '/', title: 'HOME' },
+  { slug: '/auction', title: 'AUCTION' },
   { slug: '/tokens', title: 'TOKENS' },
   { slug: '/dao', title: 'DAO' },
   { slug: '/gold', title: 'GOLD' },
