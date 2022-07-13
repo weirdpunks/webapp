@@ -228,7 +228,7 @@ const Auction = () => {
         const newPrice = parseInt(ethers.utils.formatEther(newPriceBig))
         const bidderAddress = await auctionContract?.currentAddress(expansionId)
 
-        if (newPrice > price) {
+        if (newPrice > price && newPrice > startPrice) {
           setPrice(newPrice)
           if (bidderAddress !== highBidderAddress) {
             setHighBidderAddress(bidderAddress)
@@ -242,7 +242,7 @@ const Auction = () => {
     } catch (e) {
       console.log(e)
     }
-  }, [auctionContract, expansionId, bid, price, highBidderAddress])
+  }, [auctionContract, expansionId, bid, price, highBidderAddress, startPrice])
 
   useEffect(() => {
     let myInterval = setInterval(() => {
@@ -339,7 +339,7 @@ const Auction = () => {
                         : minutes > 0
                         ? `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
                         : seconds > 0
-                        ? `:${seconds < 10 && '0'}${seconds}`
+                        ? `:${seconds < 10 ? '0' : ''}${seconds}`
                         : 'Ended'}
                     </Text>
                     <Box p={2}>
