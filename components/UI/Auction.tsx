@@ -76,23 +76,30 @@ const Auction = () => {
   const [seconds, setSeconds] = useState(0)
 
   useEffect(() => {
-    const now = Math.floor(Date.now() / 1000)
-    let secondsLeft = endTimestamp - now
-    if (startTimestamp > now) {
-      setUpcomingAuction(true)
-    } else if (secondsLeft > 0) {
-      const numDays = Math.floor(secondsLeft / SECONDS_IN_DAY)
-      secondsLeft -= numDays * SECONDS_IN_DAY
-      const numHours = Math.floor(secondsLeft / SECONDS_IN_HOUR)
-      secondsLeft -= numHours * SECONDS_IN_HOUR
-      const numMinutes = Math.floor(secondsLeft / SECONDS_IN_MINUTE)
-      secondsLeft -= numMinutes * SECONDS_IN_MINUTE
-      setDays(numDays)
-      setHours(numHours)
-      setMinutes(numMinutes)
-      setSeconds(secondsLeft)
-    } else {
-      setAuctionCompleted(true)
+    const setupTimer = () => {
+      const now = Math.floor(Date.now() / 1000)
+      let secondsLeft = endTimestamp - now
+      console.log(secondsLeft)
+      if (startTimestamp > now) {
+        setUpcomingAuction(true)
+      } else if (secondsLeft > 0) {
+        const numDays = Math.floor(secondsLeft / SECONDS_IN_DAY)
+        secondsLeft -= numDays * SECONDS_IN_DAY
+        const numHours = Math.floor(secondsLeft / SECONDS_IN_HOUR)
+        secondsLeft -= numHours * SECONDS_IN_HOUR
+        const numMinutes = Math.floor(secondsLeft / SECONDS_IN_MINUTE)
+        secondsLeft -= numMinutes * SECONDS_IN_MINUTE
+        setDays(numDays)
+        setHours(numHours)
+        setMinutes(numMinutes)
+        setSeconds(secondsLeft)
+      } else {
+        setAuctionCompleted(true)
+      }
+    }
+
+    if (startTimestamp !== 0 && endTimestamp !== 0) {
+      setupTimer()
     }
   }, [startTimestamp, endTimestamp])
 
@@ -330,7 +337,7 @@ const Auction = () => {
                         : minutes > 0
                         ? `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
                         : seconds > 0
-                        ? `${seconds < 10 ? `0${seconds}` : seconds}`
+                        ? `:${seconds < 10 && '0'}${seconds}`
                         : 'Ended'}
                     </Text>
                     <Box p={2}>
