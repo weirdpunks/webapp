@@ -201,12 +201,11 @@ const Auction = () => {
   useEffect(() => {
     const loadWeirdContract = async () => {
       const erc20 = new ethers.Contract(weird.polygon, erc20abi, signer)
-      const isWeirdApproved = await erc20.allowance(address, auction.polygon)
-      if (
-        isWeirdApproved &&
-        isWeirdApproved._hex ===
-          '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-      ) {
+      const isWeirdApprovedBig = await erc20.allowance(address, auction.polygon)
+      const isWeirdApproved = parseInt(
+        ethers.utils.formatEther(isWeirdApprovedBig)
+      )
+      if (isWeirdApproved !== 0) {
         setWeirdApproved(true)
       }
       setWeirdContract(erc20)

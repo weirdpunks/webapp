@@ -97,6 +97,13 @@ export const auctionAbi = [
     type: 'function'
   },
   {
+    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
+    name: 'claimableForAddress',
+    outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
     inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     name: 'currentAddress',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],
@@ -259,6 +266,13 @@ export const auctionAbi = [
     inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     name: 'winnerAddress',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'winnerClaimed',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
     stateMutability: 'view',
     type: 'function'
   }
