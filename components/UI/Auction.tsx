@@ -236,6 +236,7 @@ const Auction = () => {
           if (bid < newPrice + 1) {
             setBid(newPrice + 1)
           }
+          setMinBid(newPrice + 1)
         }
       }
     } catch (e) {
