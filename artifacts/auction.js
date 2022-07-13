@@ -1,14 +1,7 @@
 export const auctionAbi = [
   {
     inputs: [
-      { internalType: 'address', name: '_auctionStarter', type: 'address' },
-      { internalType: 'address', name: '_EWP', type: 'address' },
-      { internalType: 'address', name: '_WeirdToken', type: 'address' },
-      {
-        internalType: 'address',
-        name: '_overrideFinalizeAddress',
-        type: 'address'
-      }
+      { internalType: 'address', name: '_auctionStarter', type: 'address' }
     ],
     stateMutability: 'nonpayable',
     type: 'constructor'
@@ -97,8 +90,15 @@ export const auctionAbi = [
     type: 'function'
   },
   {
-    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
     name: 'currentPrice',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'currentPriceMapping',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function'
@@ -134,13 +134,6 @@ export const auctionAbi = [
     name: 'onERC721Received',
     outputs: [{ internalType: 'bytes4', name: '', type: 'bytes4' }],
     stateMutability: 'nonpayable',
-    type: 'function'
-  },
-  {
-    inputs: [],
-    name: 'overrideFinalizeAddress',
-    outputs: [{ internalType: 'address', name: '', type: 'address' }],
-    stateMutability: 'view',
     type: 'function'
   },
   {
@@ -238,6 +231,13 @@ export const auctionAbi = [
     inputs: [],
     name: 'upcomingAuctions',
     outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'winnerAddress',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
     stateMutability: 'view',
     type: 'function'
   }

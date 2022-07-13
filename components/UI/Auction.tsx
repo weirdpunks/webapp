@@ -24,6 +24,7 @@ import {
   Text,
   UseNumberInputReturn
 } from '@chakra-ui/react'
+import { getEllipsisTxt } from '@/utils/formatters'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { FaCheckCircle } from 'react-icons/fa'
 import { ethers } from 'ethers'
@@ -31,6 +32,9 @@ import Image from 'next/image'
 import React, { useState, useEffect, useCallback } from 'react'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
+const SECONDS_IN_DAY = 86400
+const SECONDS_IN_HOUR = 3600
+const SECONDS_IN_MINUTE = 60
 
 interface AuctionInfo {
   expansionId: number
@@ -48,16 +52,102 @@ const Auction = () => {
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
   const [bidTx, setBidTx] = useState('')
+  const [claimTx, setClaimTx] = useState('')
   const [auctionContract, setAuctionContract] = useState<ethers.Contract>()
   const [openAuctions, setOpenAuctions] = useState<AuctionInfo[]>([])
   const [auctionId, setAuctionId] = useState<number | null>(null)
   const [expansionId, setExpansionId] = useState(0)
   const [startTimestamp, setStartTimestamp] = useState(0)
   const [endTimestamp, setEndTimestamp] = useState(0)
+  const [upcomingAuction, setUpcomingAuction] = useState(false)
+  const [auctionCompleted, setAuctionCompleted] = useState(false)
   const [startPrice, setStartPrice] = useState(0)
   const [price, setPrice] = useState(0)
   const [minBid, setMinBid] = useState(0)
   const [bid, setBid] = useState(0)
+  const [auctionStatus, setAuctionStatus] = useState('')
+  const [highBidderAddress, setHighBidderAddress] = useState('')
+  const [highBidderENS, setHighBidderENS] = useState('')
+  const [mainnetProvider, setMainnetProvider] =
+    useState<ethers.providers.JsonRpcProvider>()
+  const [days, setDays] = useState(0)
+  const [hours, setHours] = useState(0)
+  const [minutes, setMinutes] = useState(0)
+  const [seconds, setSeconds] = useState(0)
+
+  useEffect(() => {
+    const now = Math.floor(Date.now() / 1000)
+    let secondsLeft = endTimestamp - now
+    if (startTimestamp > now) {
+      setUpcomingAuction(true)
+    } else if (secondsLeft > 0) {
+      const numDays = Math.floor(secondsLeft / SECONDS_IN_DAY)
+      secondsLeft -= numDays * SECONDS_IN_DAY
+      const numHours = Math.floor(secondsLeft / SECONDS_IN_HOUR)
+      secondsLeft -= numHours * SECONDS_IN_HOUR
+      const numMinutes = Math.floor(secondsLeft / SECONDS_IN_MINUTE)
+      secondsLeft -= numMinutes * SECONDS_IN_MINUTE
+      setDays(numDays)
+      setHours(numHours)
+      setMinutes(numMinutes)
+      setSeconds(secondsLeft)
+    } else {
+      setAuctionCompleted(true)
+    }
+  }, [startTimestamp, endTimestamp])
+
+  useEffect(() => {
+    let myInterval = setInterval(() => {
+      if (seconds === 0) {
+        if (minutes === 0) {
+          if (hours === 0) {
+            if (days === 0) {
+              clearInterval(myInterval)
+            } else {
+              setDays(days - 1)
+              setHours(23)
+              setMinutes(59)
+              setSeconds(59)
+            }
+          } else {
+            setHours(hours - 1)
+            setMinutes(59)
+            setSeconds(59)
+          }
+        } else {
+          setMinutes(minutes - 1)
+          setSeconds(59)
+        }
+      } else {
+        setSeconds(seconds - 1)
+      }
+    }, 1000)
+    return () => {
+      clearInterval(myInterval)
+    }
+  })
+
+  useEffect(() => {
+    if (mainnetProvider === undefined) {
+      setMainnetProvider(
+        new ethers.providers.JsonRpcProvider(
+          `https://mainnet.infura.io/v3/${infuraId}`
+        )
+      )
+    }
+  }, [mainnetProvider])
+
+  useEffect(() => {
+    const attemptENS = async () => {
+      const ensName = await mainnetProvider?.lookupAddress(highBidderAddress)
+      if (ensName && ensName !== '') {
+        setHighBidderENS(ensName)
+      }
+    }
+    if (highBidderAddress !== '' && mainnetProvider) {
+      attemptENS()
+    }
+  }, [highBidderAddress, mainnetProvider])
 
   useEffect(() => {
     const getAuctions = async () => {
@@ -66,25 +156,10 @@ const Auction = () => {
       const auctions = []
       for (let i = 0; i < allAuctions.length; i++) {
         const expansionId = allAuctions[i].toNumber()
-        const start = await contract.timestampStarted(expansionId)
-        const end = await contract.timestampFinished(expansionId)
-        const startPriceBig = await contract.startPrice(expansionId)
-        const startPrice = parseInt(ethers.utils.formatEther(startPriceBig))
-        auctions.push({
-          expansionId,
-          start,
-          end,
-          startPrice
-        })
+        auctions.push(expansionId)
       }
       if (auctions.length) {
-        setOpenAuctions(auctions)
-        setExpansionId(auctions[0].expansionId)
-        setStartTimestamp(auctions[0].start)
-        setEndTimestamp(auctions[0].end)
-        setStartPrice(auctions[0].startPrice)
-        setMinBid(auctions[0].startPrice)
-        setBid(auctions[0].startPrice)
+        setExpansionId(auctions[0])
       }
       setIsLoading(false)
       setAuctionContract(contract)
@@ -100,11 +175,28 @@ const Auction = () => {
   }, [address, signer, isTestnet, isLayer2, auctionContract])
 
   useEffect(() => {
-    const getCurrentAuction = async () => {}
-
-    if (auctionId !== 0 && auctionContract) {
+    const getCurrentAuction = async () => {
+      const start = await auctionContract?.timestampStarted(expansionId)
+      const end = await auctionContract?.timestampFinished(expansionId)
+      const startPriceBig = await auctionContract?.startPrice(expansionId)
+      const startPrice = parseInt(ethers.utils.formatEther(startPriceBig))
+      const currentAddress = await auctionContract?.currentAddress(expansionId)
+      const currentPrice = await auctionContract?.currentPrice(expansionId)
+      setStartTimestamp(start)
+      setEndTimestamp(end)
+      setStartPrice(startPrice)
+      setMinBid(currentPrice >= startPrice ? currentPrice + 1 : startPrice)
+      setBid(startPrice)
+      setHighBidderENS('')
+      setHighBidderAddress(
+        currentPrice !== 0 && currentPrice >= startPrice ? currentAddress : ''
+      )
     }
-  }, [auctionId, auctionContract])
+
+    if (expansionId !== 0 && auctionContract) {
+      getCurrentAuction()
+    }
+  }, [expansionId, auctionContract])
 
   useEffect(() => {
     const loadWeirdContract = async () => {
@@ -129,11 +221,14 @@ const Auction = () => {
     }
   }, [isLayer2, isTestnet, weirdContract, address, signer])
 
-  const getLatestPrice = useCallback(async () => {
+  const getLatest = useCallback(async () => {
     try {
       if (expansionId !== 0) {
-        const newPrice = await auctionContract?.currentPrice(expansionId)
-        setPrice(parseInt(ethers.utils.formatUnits(newPrice, 'ethers')))
+        const newPriceBig = await auctionContract?.currentPrice(expansionId)
+        const newPrice = parseInt(ethers.utils.formatEther(newPriceBig))
+        const address = await auctionContract?.currentAddress(expansionId)
+
+        setPrice(newPrice)
       }
     } catch (e) {
       console.log(e)
@@ -143,8 +238,8 @@ const Auction = () => {
   useEffect(() => {
     let myInterval = setInterval(() => {
       const now = Math.floor(Date.now() / 1000)
-      if (endTimestamp <= now && startTimestamp >= now) {
-        getLatestPrice()
+      if (endTimestamp >= now && startTimestamp <= now) {
+        getLatest()
       } else {
         clearInterval(myInterval)
       }
@@ -152,7 +247,7 @@ const Auction = () => {
     return () => {
       clearInterval(myInterval)
     }
-  }, [getLatestPrice, startTimestamp, endTimestamp])
+  }, [getLatest, startTimestamp, endTimestamp])
 
   const handleApproveWeirdToken = async () => {
     try {
@@ -176,7 +271,17 @@ const Auction = () => {
       )
       setBidTx(transaction.hash)
       await transaction.wait()
-      getLatestPrice()
+      getLatest()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleClaim = async () => {
+    try {
+      const transaction = await auctionContract?.finalize(expansionId)
+      setClaimTx(transaction.hash)
+      await transaction.wait()
     } catch (e) {
       console.log(e)
     }
@@ -210,7 +315,23 @@ const Auction = () => {
                       Expansion Weird Punk #{expansionId}
                     </Text>
                     <Text fontSize={'lg'}>
-                      Auction end: <Timer timestamp={endTimestamp as number} />
+                      {upcomingAuction
+                        ? 'Auction begins soon.'
+                        : auctionCompleted
+                        ? 'Auction ended.'
+                        : days > 0
+                        ? `${days} Day${days > 1 && 's'} ${hours}:${minutes}:${
+                            seconds < 10 ? `0${seconds}` : seconds
+                          }`
+                        : hours > 0
+                        ? `${hours}:${minutes}:${
+                            seconds < 10 ? `0${seconds}` : seconds
+                          }`
+                        : minutes > 0
+                        ? `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
+                        : seconds > 0
+                        ? `${seconds < 10 ? `0${seconds}` : seconds}`
+                        : 'Ended'}
                     </Text>
                     <Box p={2}>
                       <Text>Step 1. Approve WEIRD</Text>
@@ -266,42 +387,75 @@ const Auction = () => {
                     <Box p={2} textAlign={'center'} mx={'auto'}>
                       <>
                         {startPrice <= price && (
-                          <Text>Highest Bid: {price} WEIRD</Text>
+                          <>
+                            <Text>Highest Bid: {price} WEIRD</Text>
+                            {highBidderAddress !== '' && price > 0 && (
+                              <Text>
+                                Bidder:{' '}
+                                {highBidderENS !== ''
+                                  ? highBidderENS
+                                  : getEllipsisTxt(highBidderAddress)}
+                              </Text>
+                            )}
+                          </>
                         )}
                         {startPrice > price && (
                           <Text>Starting Price: {startPrice} WEIRD</Text>
                         )}
                       </>
-                      <NumberInput
-                        min={minBid}
-                        isDisabled={!weirdApproved}
-                        maxW='100px'
-                        mr='2rem'
-                        value={bid}
-                        textAlign={'center'}
-                        mx={'auto'}
-                        my={2}
-                        onChange={handleUpdateBid}>
-                        <NumberInputField />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                      <Button
-                        onClick={handleBid}
-                        disabled={!weirdApproved || bid < price + 1}>
-                        Place Bid
-                      </Button>
-                      {bidTx !== '' && (
-                        <Box p={4}>
-                          <Link
-                            href={`https://polygonscan.com/tx/${bidTx}`}
-                            isExternal={true}>
-                            View transaction <ExternalLinkIcon mx='2px' />
-                          </Link>
-                        </Box>
-                      )}
+                      <>
+                        {auctionCompleted && highBidderAddress === address && (
+                          <>
+                            <Button onClick={handleClaim}>Claim</Button>
+                            {claimTx !== '' && (
+                              <Box p={4}>
+                                <Link
+                                  href={`https://polygonscan.com/tx/${claimTx}`}
+                                  isExternal={true}>
+                                  View transaction <ExternalLinkIcon mx='2px' />
+                                </Link>
+                              </Box>
+                            )}
+                          </>
+                        )}
+                      </>
+                      <>
+                        {!auctionCompleted && (
+                          <>
+                            <NumberInput
+                              min={minBid}
+                              max={weirdLayer2}
+                              isDisabled={!weirdApproved}
+                              maxW='100px'
+                              mr='2rem'
+                              value={bid}
+                              textAlign={'center'}
+                              mx={'auto'}
+                              my={2}
+                              onChange={handleUpdateBid}>
+                              <NumberInputField />
+                              <NumberInputStepper>
+                                <NumberIncrementStepper />
+                                <NumberDecrementStepper />
+                              </NumberInputStepper>
+                            </NumberInput>
+                            <Button
+                              onClick={handleBid}
+                              disabled={!weirdApproved || bid < price + 1}>
+                              Place Bid
+                            </Button>
+                          </>
+                        )}
+                        {bidTx !== '' && (
+                          <Box p={4}>
+                            <Link
+                              href={`https://polygonscan.com/tx/${bidTx}`}
+                              isExternal={true}>
+                              View transaction <ExternalLinkIcon mx='2px' />
+                            </Link>
+                          </Box>
+                        )}
+                      </>
                     </Box>
                   </Box>
                 </SimpleGrid>
