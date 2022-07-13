@@ -1,8 +1,7 @@
 import DisplayCard from '@/components/UI/DisplayCard'
-import Timer from '@/components/UI/Timer'
 import { auctionAbi } from '@/artifacts/auction'
 import { erc20abi } from '@/artifacts/erc20'
-import { claimed, startConnecting, useApp } from '@/components/Context'
+import { startConnecting, useApp } from '@/components/Context'
 import { weird, auction } from '@/utils/contracts'
 import {
   Box,
@@ -10,8 +9,6 @@ import {
   Center,
   CircularProgress,
   Flex,
-  Heading,
-  HStack,
   Icon,
   Link,
   NumberInput,
@@ -21,14 +18,12 @@ import {
   NumberDecrementStepper,
   SimpleGrid,
   Stack,
-  Text,
-  UseNumberInputReturn
+  Text
 } from '@chakra-ui/react'
 import { getEllipsisTxt } from '@/utils/formatters'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { FaCheckCircle } from 'react-icons/fa'
 import { ethers } from 'ethers'
-import Image from 'next/image'
 import React, { useState, useEffect, useCallback } from 'react'
 
 const infuraId = process.env.NEXT_PUBLIC_INFURA_ID
@@ -47,7 +42,6 @@ const Auction = () => {
   const { state, dispatch } = useApp()
   const { isTestnet, isLayer2, signer, address, weirdLayer2 } = state
 
-  const [loading, setIsLoading] = useState(true)
   const [weirdApproved, setWeirdApproved] = useState(false)
   const [weirdContract, setWeirdContract] = useState<ethers.Contract>()
   const [weirdApprovalTx, setWeirdApprovalTx] = useState('')
@@ -167,7 +161,6 @@ const Auction = () => {
       if (auctions.length) {
         setExpansionId(auctions[0])
       }
-      setIsLoading(false)
       setAuctionContract(contract)
     }
     if (
@@ -187,7 +180,8 @@ const Auction = () => {
       const startPriceBig = await auctionContract?.startPrice(expansionId)
       const startPrice = parseInt(ethers.utils.formatEther(startPriceBig))
       const currentAddress = await auctionContract?.currentAddress(expansionId)
-      const currentPrice = await auctionContract?.currentPrice(expansionId)
+      const currentPriceBig = await auctionContract?.currentPrice(expansionId)
+      const currentPrice = parseInt(ethers.utils.formatEther(currentPriceBig))
       setStartTimestamp(start)
       setEndTimestamp(end)
       setStartPrice(startPrice)
@@ -366,7 +360,11 @@ const Auction = () => {
                               )}
                             </>
                           ) : (
-                            <Stack direction={'row'} align={'center'}>
+                            <Stack
+                              direction={'row'}
+                              align={'center'}
+                              textAlign={'center'}
+                              mx={'auto'}>
                               <Flex
                                 w={8}
                                 h={8}
