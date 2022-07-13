@@ -79,7 +79,6 @@ const Auction = () => {
     const setupTimer = () => {
       const now = Math.floor(Date.now() / 1000)
       let secondsLeft = endTimestamp - now
-      console.log(secondsLeft)
       if (startTimestamp > now) {
         setUpcomingAuction(true)
       } else if (secondsLeft > 0) {
