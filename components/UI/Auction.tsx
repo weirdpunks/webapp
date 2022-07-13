@@ -226,14 +226,22 @@ const Auction = () => {
       if (expansionId !== 0) {
         const newPriceBig = await auctionContract?.currentPrice(expansionId)
         const newPrice = parseInt(ethers.utils.formatEther(newPriceBig))
-        const address = await auctionContract?.currentAddress(expansionId)
+        const bidderAddress = await auctionContract?.currentAddress(expansionId)
 
-        setPrice(newPrice)
+        if (newPrice > price) {
+          setPrice(newPrice)
+          if (bidderAddress !== highBidderAddress) {
+            setHighBidderAddress(bidderAddress)
+          }
+          if (bid < newPrice + 1) {
+            setBid(newPrice + 1)
+          }
+        }
       }
     } catch (e) {
       console.log(e)
     }
-  }, [auctionContract, expansionId])
+  }, [auctionContract, expansionId, bid, price, highBidderAddress])
 
   useEffect(() => {
     let myInterval = setInterval(() => {
