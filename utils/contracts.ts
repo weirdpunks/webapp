@@ -28,7 +28,7 @@ export const expansions = {
 }
 
 export const auction = {
-  polygon: '0xa5d921aeb146452c41237e22cf1352f84a9d6c1c'
+  polygon: '0xc2e5d57be87f501657da2b12c379304edf55d1ac'
 }
 
 export const openSea = {
