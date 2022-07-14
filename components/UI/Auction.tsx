@@ -328,15 +328,17 @@ const Auction = () => {
                         : auctionCompleted
                         ? 'Auction ended.'
                         : days > 0
-                        ? `${days} Day${days > 1 && 's'} ${hours}:${minutes}:${
-                            seconds < 10 ? `0${seconds}` : seconds
-                          }`
+                        ? `${days} Day${days > 1 && 's'} ${hours}:${
+                            minutes < 10 ? '0' : ''
+                          }${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
                         : hours > 0
-                        ? `${hours}:${minutes}:${
+                        ? `${hours}:${minutes < 10 ? '0' : ''}${minutes}:${
                             seconds < 10 ? `0${seconds}` : seconds
                           }`
                         : minutes > 0
-                        ? `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`
+                        ? `${minutes < 10 ? '0' : ''}${minutes}:${
+                            seconds < 10 ? `0${seconds}` : seconds
+                          }`
                         : seconds > 0
                         ? `:${seconds < 10 ? '0' : ''}${seconds}`
                         : 'Ended'}
