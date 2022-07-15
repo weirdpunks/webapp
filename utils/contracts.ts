@@ -24,11 +24,11 @@ export const weirdPunks = {
 
 export const expansions = {
   mainnet: '0x192e09b86c0bd05e8ccb9665065c9d5d58b6fc89',
-  polygon: '0x4571038f92f02bd812fa05eb6260483a7614a05d'
+  polygon: '0x8e4Bd5984F16EDdf7232AdD840f2479cBC14ce9D'
 }
 
 export const auction = {
-  polygon: '0x434970f6C993bE764B182C28838018EC9d50b87A'
+  polygon: '0xeB60491dc3e129c58BEFd10062778821d082927F'
 }
 
 export const openSea = {
