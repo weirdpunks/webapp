@@ -203,10 +203,6 @@ const Wallet = () => {
           return Math.floor(parseFloat(ethers.utils.formatUnits(balance, 18)))
         }
       } catch (e) {
-        // console.log(
-        //   e,
-        //   `error getting balance of address ${address} on contract ${contract}`
-        // )
         return 0
       }
     },
@@ -243,10 +239,6 @@ const Wallet = () => {
         }
         return found
       } catch (e) {
-        // console.log(
-        //   e,
-        //   `error getting balanceOfBatch with contract: ${contract}`
-        // )
         return []
       }
     },
@@ -276,14 +268,12 @@ const Wallet = () => {
           }
         })
         if (res.data.response === 'OK' && res.data.nfts.length > 0) {
-          // console.log(res.data)
           const ids = res.data.nfts.map((i: { token_id: string }) =>
             parseInt(i.token_id)
           )
           return ids.sort((a, b) => a - b)
         }
       } catch (e) {
-        // console.log(JSON.stringify(e, null, 2))
         return []
       }
     },
@@ -305,7 +295,6 @@ const Wallet = () => {
         const sorted = unsorted.sort((a, b) => a - b)
         return sorted
       } catch (e) {
-        // console.log(JSON.stringify(e, null, 2))
         return []
       }
     },
@@ -327,7 +316,6 @@ const Wallet = () => {
         const sorted = unsorted.sort((a, b) => a - b)
         return sorted
       } catch (e) {
-        // console.log(JSON.stringify(e, null, 2))
         return []
       }
     },
@@ -411,19 +399,22 @@ const Wallet = () => {
         ids: mainnetWeirdPunks
       })
 
-      dispatch(
-        setBalances({
-          weirdMainnet: mainnetBalance || 0,
-          weirdLayer2: layer2Balance || 0,
-          unclaimed: unclaimed,
-          weirdPunksMainnet: mainnetWeirdPunks || [],
-          weirdPunksLayer2: layer2WeirdPunks || [],
-          expansionsMainnet: mainnetExpansions || [],
-          expansionsLayer2: layer2Expansions || [],
-          osMainnet: mainnetOSWeirdPunks || [],
-          osLayer2: layer2OSWeirdPunks || []
-        })
-      )
+      const balances = {
+        weirdMainnet: mainnetBalance || 0,
+        weirdLayer2: layer2Balance || 0,
+        unclaimed: unclaimed,
+        weirdPunksMainnet: mainnetWeirdPunks || [],
+        weirdPunksLayer2: layer2WeirdPunks || [],
+        expansionsMainnet: mainnetExpansions || [],
+        expansionsLayer2: layer2Expansions || [],
+        osMainnet: mainnetOSWeirdPunks || [],
+        osLayer2: layer2OSWeirdPunks || []
+      }
+      const data = { timestamp: Math.floor(Date.now() / 1000), balances }
+      console.log(data)
+      localStorage.setItem('balances', JSON.stringify(data))
+
+      dispatch(setBalances(balances))
     }
 
     if (
@@ -434,7 +425,17 @@ const Wallet = () => {
         goerliProvider) ||
       (!isTestnet && mainnetProvider && layer2Provider)
     ) {
-      getBalances()
+      const JSONdata = localStorage.getItem('balances')
+      if (JSONdata) {
+        const data = JSON.parse(JSONdata)
+        if (data.timestamp + 300 < Math.floor(Date.now() / 1000)) {
+          getBalances()
+        } else {
+          dispatch(setBalances(data.balances))
+        }
+      } else {
+        getBalances()
+      }
     }
   }, [
     isTestnet,
