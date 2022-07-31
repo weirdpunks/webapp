@@ -27,12 +27,12 @@ export default async function handler(
 ) {
   await runMiddleware(req, res, cors)
   res.status(200).json({
-    name: 'Weird Punks Token List',
+    name: 'Weird Token List',
     timestamp: '2022-07-31T00:00:00.000Z',
     version: {
       major: 0,
       minor: 0,
-      patch: 1
+      patch: 2
     },
     tags: {},
     logoURI:
