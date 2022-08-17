@@ -40,7 +40,7 @@ const Footer = () => {
           </SocialButton>
           <SocialButton
             label={'Discord'}
-            href={'https://discord.gg/weirdpunks'}>
+            href={'https://discord.gg/S5suf6pR8M'}>
             <FaDiscord />
           </SocialButton>
           <SocialButton
