@@ -160,9 +160,9 @@ const Wallet = () => {
           dispatch(setAddress(accounts[0]))
         }
       }
-      const handleChainChanged = (_hexChainId: string) => {
-        window.location.reload()
-      }
+      // const handleChainChanged = (_hexChainId: string) => {
+      //   window.location.reload()
+      // }
 
       const handleConnect = (info: { chainId: number }) => {
         console.log(info)
@@ -174,13 +174,13 @@ const Wallet = () => {
       }
 
       instance.on('accountsChanged', handleAccountsChanged)
-      instance.on('chainChanged', handleChainChanged)
+      // instance.on('chainChanged', handleChainChanged)
       instance.on('connect', handleConnect)
       instance.on('disconnect', handleDisconnect)
       return () => {
         if (instance.removeListener) {
           instance.removeListener('accountsChanged', handleAccountsChanged)
-          instance.removeListener('chainChanged', handleChainChanged)
+          // instance.removeListener('chainChanged', handleChainChanged)
           instance.removeListener('connect', handleConnect)
           instance.removeListener('disconnect', handleDisconnect)
         }
