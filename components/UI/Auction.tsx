@@ -299,13 +299,7 @@ const Auction = () => {
     setBid(parseInt(num))
   }
 
-  return !address ? (
-    <Button onClick={() => dispatch(startConnecting())}>
-      Please connect your wallet
-    </Button>
-  ) : !isLayer2 || isTestnet ? (
-    <Text>Please switch to Polygon</Text>
-  ) : (
+  return (
     <Box>
       <Center py={6}>
         <Stack direction={'column'} align={'center'} justify={'center'}>
@@ -319,7 +313,7 @@ const Auction = () => {
                     <DisplayCard id={expansionId} />
                   </Box>
                   <Box textAlign={'center'}>
-                    <Text fontSize={'xl'}>
+                    <Text fontSize={'xl'} mt={12} fontWeight={'bold'}>
                       Expansion Weird Punk #{expansionId}
                     </Text>
                     <Text fontSize={'lg'}>
@@ -343,17 +337,17 @@ const Auction = () => {
                         ? `:${seconds < 10 ? '0' : ''}${seconds}`
                         : 'Ended'}
                     </Text>
-                    <Box p={2}>
-                      <Text>Step 1. Approve WEIRD</Text>
-                      {weirdContract === undefined ? (
-                        <CircularProgress
-                          size={'32px'}
-                          isIndeterminate
-                          color='green.300'
-                        />
-                      ) : (
-                        <>
-                          {!weirdApproved ? (
+                    <>
+                      {!weirdApproved && (
+                        <Box p={2}>
+                          <Text>Approve WEIRD</Text>
+                          {weirdContract === undefined ? (
+                            <CircularProgress
+                              size={'32px'}
+                              isIndeterminate
+                              color='green.300'
+                            />
+                          ) : (
                             <>
                               {weirdApprovalTx !== '' ? (
                                 <>
@@ -369,35 +363,19 @@ const Auction = () => {
                                 </Button>
                               )}
                             </>
-                          ) : (
-                            <Stack
-                              direction={'row'}
-                              align={'center'}
-                              textAlign={'center'}
-                              mx={'auto'}>
-                              <Flex
-                                w={8}
-                                h={8}
-                                align={'center'}
-                                justify={'center'}
-                                rounded={'full'}>
-                                <Icon as={FaCheckCircle} color='green.500' />
-                              </Flex>
-                              <Text fontWeight={600}>Approved</Text>
-                            </Stack>
                           )}
-                        </>
-                      )}
-                      {weirdApprovalTx !== '' && (
-                        <Box p={4}>
-                          <Link
-                            href={`https://polygonscan.com/tx/${weirdApprovalTx}`}
-                            isExternal={true}>
-                            View transaction <ExternalLinkIcon mx='2px' />
-                          </Link>
+                          {weirdApprovalTx !== '' && (
+                            <Box p={4}>
+                              <Link
+                                href={`https://polygonscan.com/tx/${weirdApprovalTx}`}
+                                isExternal={true}>
+                                View transaction <ExternalLinkIcon mx='2px' />
+                              </Link>
+                            </Box>
+                          )}
                         </Box>
                       )}
-                    </Box>
+                    </>
                     <Box p={2} textAlign={'center'} mx={'auto'}>
                       <>
                         {startPrice <= price && (
@@ -436,28 +414,39 @@ const Auction = () => {
                       <>
                         {!auctionCompleted && (
                           <>
-                            <NumberInput
-                              min={minBid}
-                              max={weirdLayer2}
-                              isDisabled={!weirdApproved}
-                              maxW='100px'
-                              mr='2rem'
-                              value={bid}
-                              textAlign={'center'}
-                              mx={'auto'}
-                              my={2}
-                              onChange={handleUpdateBid}>
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                            <Button
-                              onClick={handleBid}
-                              disabled={!weirdApproved || bid < price + 1}>
-                              Place Bid
-                            </Button>
+                            {!address ? (
+                              <Button
+                                onClick={() => dispatch(startConnecting())}>
+                                Please connect your wallet to bid
+                              </Button>
+                            ) : !isLayer2 || isTestnet ? (
+                              <Text>Please switch to Polygon to bid</Text>
+                            ) : (
+                              <>
+                                <NumberInput
+                                  min={minBid}
+                                  max={weirdLayer2}
+                                  isDisabled={!weirdApproved}
+                                  maxW='100px'
+                                  mr='2rem'
+                                  value={bid}
+                                  textAlign={'center'}
+                                  mx={'auto'}
+                                  my={2}
+                                  onChange={handleUpdateBid}>
+                                  <NumberInputField />
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                                <Button
+                                  onClick={handleBid}
+                                  disabled={!weirdApproved || bid < price + 1}>
+                                  Place Bid
+                                </Button>
+                              </>
+                            )}
                           </>
                         )}
                         {bidTx !== '' && (

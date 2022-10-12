@@ -22,9 +22,11 @@ export default function handler(
   res: NextApiResponse<Data | ErrorData>
 ) {
   try {
-    ;(async () => {
+    const getMetadata = async () => {
       const { id } = req.query
-      const url = `https://ipfs.io/ipfs/${
+      // const ipfsProvider = 'https://ipfs.io/ipfs/'
+      const ipfsProvider = 'https://tcvdh.infura-ipfs.io/ipfs/'
+      const url = `${ipfsProvider}${
         parseInt(id as string) > 1000
           ? 'QmcNARPkJiKHViysRQtsVQLEnZGnps1oVka8Jqmi9qdibf'
           : 'QmP3GBeMvgPW6eJrYGxgckjZSMZWYjbkuJNdCNBCLJtFg8'
@@ -35,14 +37,12 @@ export default function handler(
         res.status(200).json({
           name: metadata.name,
           description: metadata.description,
-          image: `https://ipfs.io/ipfs/${metadata.image.replace(
-            'ipfs://',
-            ''
-          )}`,
+          image: `/wp/${id}.gif`,
           traits: metadata.traits
         })
       }
-    })()
+    }
+    getMetadata()
   } catch (e) {
     res.status(500).json({ error: 'Unable to get data' })
   }

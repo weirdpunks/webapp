@@ -24,31 +24,39 @@ type Data = {
 
 const DisplayCard = ({ id, isGold }: { id: number; isGold?: boolean }) => {
   const [img, setImg] = useState('')
-  const [name, setname] = useState('')
+  const [name, setName] = useState('')
   const [species, setSpecies] = useState('')
   const [gender, setGender] = useState('')
   const [accessories, setAccessories] = useState('')
 
   useEffect(() => {
-    const getImg = async () => {
-      const res = await axios.get(`/api/wp/${id}`)
-      if (res.data) {
-        const data = res.data as Data
-        setImg(data.image)
-        setname(data.name)
-        const species = data.traits.filter((i) => i.trait_type === 'Type')
+    const getData = async () => {
+      const ipfsProvider = 'https://tcvdh.infura-ipfs.io/ipfs/'
+      const url = `${ipfsProvider}${
+        id > 1000
+          ? 'QmcNARPkJiKHViysRQtsVQLEnZGnps1oVka8Jqmi9qdibf'
+          : 'QmP3GBeMvgPW6eJrYGxgckjZSMZWYjbkuJNdCNBCLJtFg8'
+      }/${id}.json`
+      const response = await axios.get(url)
+      if (response.data) {
+        const metadata = response.data as Data
+        setName(metadata.name)
+        setImg(`/wp/${id}.gif`)
+        const species = metadata.traits.filter((i) => i.trait_type === 'Type')
         setSpecies(species[0]?.value as string)
-        const gender = data.traits.filter((i) => i.trait_type === 'Gender')
+        const gender = metadata.traits.filter((i) => i.trait_type === 'Gender')
         setGender(gender[0]?.value as string)
-        const accessories = data.traits.filter(
+        const accessories = metadata.traits.filter(
           (i) => i.trait_type !== 'Type' && i.trait_type !== 'Gender'
         )
         const traits = accessories?.map((i) => i.value)
         setAccessories(traits.join(', '))
       }
     }
-    getImg()
-  }, [id])
+    if (!isGold) {
+      getData()
+    }
+  }, [id, isGold])
 
   return (
     <Center py={12}>
