@@ -45,7 +45,7 @@ interface AuctionProps {
 
 const AuctionPage: NextPage<AuctionProps> = ({
   auction
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
+}: InferGetStaticPropsType<typeof getServerSideProps>) => {
   const { state, dispatch } = useApp()
   const { isTestnet, isLayer2, signer, address, weirdLayer2 } = state
   const {
@@ -449,7 +449,7 @@ const AuctionPage: NextPage<AuctionProps> = ({
   )
 }
 
-const getStaticProps = async () => {
+const getServerSideProps = async () => {
   const provider = new ethers.providers.JsonRpcProvider(
     `https://polygon-mainnet.infura.io/v3/${infuraId}`
   )
@@ -490,6 +490,6 @@ const getStaticProps = async () => {
   }
 }
 
-export { getStaticProps }
+export { getServerSideProps }
 
 export default AuctionPage
