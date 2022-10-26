@@ -265,7 +265,7 @@ const AuctionPage: NextPage<AuctionProps> = ({
               <>
                 {!id ? (
                   <Text>Loading...</Text>
-                ) : id === 0 ? (
+                ) : id === -1 ? (
                   <Text>{`We don't have any auctions running at the moment.`}</Text>
                 ) : (
                   <SimpleGrid columns={{ sm: 1, md: 2 }} spacing={12}>
@@ -459,6 +459,22 @@ const getServerSideProps = async () => {
     provider
   )
   const allAuctions = await contract.getAllLiveAuctions()
+  if (!allAuctions || allAuctions.length === 0) {
+    const auction: Data = {
+      id: -1,
+      startTimestamp: 0,
+      endTimestamp: 0,
+      startingBid: 0,
+      highestBid: 0,
+      bidderAddress: '',
+      bidderENS: ''
+    }
+    return {
+      props: {
+        auction
+      }
+    }
+  }
   const id = await allAuctions[0].toNumber()
   const startTimestamp = await contract?.timestampStarted(id)
   const endTimestamp = await contract?.timestampFinished(id)
