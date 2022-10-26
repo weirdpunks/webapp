@@ -7,7 +7,7 @@ import { ReactNode } from 'react'
 
 const UI = ({ children }: { children: ReactNode }) => {
   return (
-    <Box>
+    <Box display={'flex'} flexDirection={'column'} minHeight={'100vh'}>
       <Head>
         <title>Weird Punks</title>
         <meta
@@ -18,9 +18,7 @@ const UI = ({ children }: { children: ReactNode }) => {
       </Head>
       <Wallet />
       <Bar />
-      <Container maxW='4xl' minHeight={'60vh'}>
-        {children}
-      </Container>
+      <Container maxW='4xl'>{children}</Container>
       <Footer />
     </Box>
   )
