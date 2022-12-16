@@ -444,6 +444,14 @@ const AuctionPage: NextPage<AuctionProps> = ({
             </Box>
           </Stack>
         </Center>
+
+        <Box pb={16}>
+          <iframe
+            width='100%'
+            height='600px'
+            allow='fullscreen'
+            src='https://turf.dev/hoods/0xA96Cbc4c3651B25AeBf9ec28d478781bc366BAC7'></iframe>
+        </Box>
       </Box>
     </Box>
   )
